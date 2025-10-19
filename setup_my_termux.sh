@@ -62,12 +62,14 @@ if command -v starship >/dev/null 2>&1; then
 
   # Ensure command_timeout is set to 100
   CFG="$HOME/.config/starship.toml"
-  if grep -q '^command_timeout' "$CFG" 2>/dev/null; then
-    sed -i 's/^command_timeout.*/command_timeout = 100/' "$CFG"
-  else
-    echo '' >> "$CFG"
-    echo 'command_timeout = 100' >> "$CFG"
-  fi
+
+if grep -q '^command_timeout' "$CFG" 2>/dev/null; then
+  # If command_timeout already exists, replace its value
+  sed -i 's/^command_timeout.*/command_timeout = 100/' "$CFG"
+else
+  # Insert after the first line
+  sed -i '1a command_timeout = 100' "$CFG"
+fi
 else
   echo "⚠️  starship not installed; skipping preset and timeout configuration."
 fi
