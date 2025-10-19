@@ -65,6 +65,9 @@ exec zsh
 ```
 ---
 
+## Output Example
+![Alt text](output_example.png)
+
 ## ⚙️ Optional Steps
 
 ### 1. Configure Git and GitHub
