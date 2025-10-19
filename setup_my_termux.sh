@@ -24,7 +24,7 @@ curl -fLo "$HOME/.termux/font.ttf" https://github.com/ryanoasis/nerd-fonts/raw/m
 
 # 4. Install Oh My Zsh (non-interactively)
 echo "😎 Installing Oh My Zsh..."
-sh -c 'RUNZSH=no CHSH=no "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"' "" --unattended
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 
 # 5. Install Oh My Zsh plugins
 echo "🧩 Installing zsh plugins (autosuggestions and syntax-highlighting)..."
