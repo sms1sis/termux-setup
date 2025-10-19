@@ -1,10 +1,10 @@
-# Termux Setup Script
+# 📲 Termux Setup Script
 
-This repository contains a comprehensive shell script to automate the setup of a complete development environment on a fresh installation of Termux on Android.
+*A comprehensive shell script to automate the setup of a complete development environment on a fresh Termux installation.*
 
-The script installs and configures Zsh, Oh My Zsh, Starship prompt, and a suite of useful development tools and plugins.
+---
 
-## Features
+## ✨ Features
 
 - **Shell & Prompt**:
   - Installs `Zsh` and sets it as the default shell.
@@ -24,12 +24,9 @@ The script installs and configures Zsh, Oh My Zsh, Starship prompt, and a suite 
   - Includes a `fix_starship_time.sh` script to easily switch Starship themes to 12-hour time.
   - Includes a custom `upload` function in `.zshrc` for quickly adding, committing, and pushing Git changes.
 
-## Prerequisites
+---
 
-- A fresh installation of Termux.
-- A working internet connection.
-
-## How to Use
+## 🚀 How to Use
 
 1.  **Clone the repository:**
 
@@ -62,7 +59,9 @@ The script installs and configures Zsh, Oh My Zsh, Starship prompt, and a suite 
 
     Close and reopen the Termux application. Your new environment will be ready!
 
-## Post-Installation
+---
+
+## ⚙️ Post-Installation
 
 - **Configure Git:** The script creates a placeholder `~/.gitconfig` file. You must edit it with your name and email:
 
