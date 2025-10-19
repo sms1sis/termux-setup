@@ -61,10 +61,11 @@ cd termux-setup
 chmod +x setup_my_termux.sh setup_git_github.sh
 ./setup_my_termux.sh
 chsh -s zsh
+exec zsh
 ```
 ---
 
-## ⚙️ Next Steps
+## ⚙️ Optional Steps
 
 ### 1. Configure Git and GitHub
 
