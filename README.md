@@ -86,8 +86,8 @@ The `gruvbox-rainbow` preset is installed by default. You can customize it by ed
 
 To apply a new preset:
 ```bash
-# Example: Apply the 'pastel-powerline' preset
-starship preset pastel-powerline -o ~/.config/starship.toml
+# Example: Apply the 'tokyo-night' preset
+starship preset tokyo-night -o ~/.config/starship.toml
 
 # Fix the time format to 12-hour (optional)
 ./fix_starship_time.sh
@@ -95,3 +95,7 @@ starship preset pastel-powerline -o ~/.config/starship.toml
 # Restart the shell to see changes
 exec zsh
 ```
+---
+
+## 🙌 Credit
+- [starship](https://github.com/starship/starship): Fow making the minimal, blazing-fast, and infinitely customizable prompt for any shell!
