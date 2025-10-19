@@ -2,6 +2,11 @@
 
 *A comprehensive shell script to automate the setup of a complete development environment on a fresh Termux installation.*
 
+## 🖥️ Output Example
+<p align="center">
+  <img src="output_example.png" alt="Script Output" width="650">
+</p>
+
 ---
 
 ## ✨ Features
@@ -64,9 +69,6 @@ chsh -s zsh
 exec zsh
 ```
 ---
-
-## Output Example
-![Alt text](output_example.png)
 
 ## ⚙️ Optional Steps
 
