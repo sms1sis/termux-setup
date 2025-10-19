@@ -26,7 +26,7 @@
 - **Automation & Helpers**:
   - Includes a `setup_git_github.sh` script to interactively configure your Git identity and connect to GitHub via SSH.
   - Includes a `fix_starship_time.sh` script to easily switch Starship themes to 12-hour time.
-  - Includes a custom `upload` function in `.zshrc` for quickly pushing Git changes.
+  - Includes a `fix-starship-command_timeout.sh` script to easily set/increase command_timeout to 100.
 
 ---
 
@@ -91,6 +91,9 @@ starship preset tokyo-night -o ~/.config/starship.toml
 
 # Fix the time format to 12-hour (optional)
 ./fix_starship_time.sh
+
+#Fix the command_timeout warning (incase)
+./fix-starship-command_timeout.sh
 
 # Restart the shell to see changes
 exec zsh

@@ -34,7 +34,7 @@ ssh -T git@github.com
 echo "✅ Git setup done!"
 
 # 7. Add the upload function to .zshrc
-echo '
+cat << 'EOF_UPLOAD_FUNCTION' >> ~/.zshrc
 # 🧠 Git quick upload helper for Zsh with color messages
 upload() {
   # Define color codes
@@ -78,7 +78,7 @@ upload() {
       return 1
     fi
     if git push origin "$BRANCH"; then
-      echo -e "${GREEN}🚀 Pushed successfully to branch \'${BRANCH}\ நேரடியாக!${RESET}"
+      echo -e "${GREEN}🚀 Pushed successfully to branch \'${BRANCH}\' directly!${RESET}"
     else
       echo -e "${RED}❌ Push failed.${RESET}"
     fi
@@ -86,6 +86,6 @@ upload() {
     echo -e "${YELLOW}⚠️  Remote \'origin\' not found; push skipped.${RESET}"
   fi
 }
-' >> ~/.zshrc
+EOF_UPLOAD_FUNCTION
 
 echo "✅ Upload function added to .zshrc"

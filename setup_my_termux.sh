@@ -53,27 +53,12 @@ EOF
 echo "✨ Configuring Starship prompt..."
 if command -v starship >/dev/null 2>&1; then
   if starship preset --help >/dev/null 2>&1; then
-    starship preset gruvbox-rainbow -o "$HOME/.config/starship.toml"
+    starship preset catppuccin-powerline -o ~/.config/starship.toml
   else
     echo "⚠️  starship preset not supported by this version; creating minimal config..."
     mkdir -p "$HOME/.config"
     echo 'add_newline = false' > "$HOME/.config/starship.toml"
   fi
-
-  # Ensure command_timeout is set to 100
-  CFG="$HOME/.config/starship.toml"
-
-if grep -q '^command_timeout' "$CFG" 2>/dev/null; then
-  # If command_timeout already exists, replace its value
-  sed -i 's/^command_timeout.*/command_timeout = 100/' "$CFG"
-else
-  # Insert after the first line
-  sed -i '1a command_timeout = 100' "$CFG"
-fi
-else
-  echo "⚠️  starship not installed; skipping preset and timeout configuration."
-fi
-
 
 
 # 8. Create the time-fixing helper script
@@ -104,11 +89,37 @@ fi
 EOF
 chmod +x ~/fix_starship_time.sh
 
-# 9. Disable the Termux welcome message
+#9.Creat the command_timeout-fixing helper script
+echo "🕒 Creating the fix-starship-command_timeout.sh  helper script..."
+cat > ~/fix-starship-command_timeout.sh << 'EOF'
+#!/bin/bash
+# This script automatically changes the command-timeout value in starship.tmol
+# Ensure command_timeout is set to 100
+CFG="$HOME/.config/starship.toml"
+
+if [ ! -f "$CFG" ]; then
+  echo "❌ Error: starship.toml not found at $CFG"
+  exit 1
+fi
+
+if grep -q '^command_timeout' "$CFG" 2>/dev/null; then
+  # If command_timeout already exists, replace its value
+  sed -i 's/^command_timeout.*/command_timeout = 100/' "$CFG"
+else
+  # Insert after the first line
+  sed -i '1a command_timeout = 100' "$CFG"
+fi
+else
+  echo "⚠️  starship not installed; skipping preset and timeout configuration."
+fi
+EOF
+chmod +x ~/fix-starship-command_timeout.sh
+
+# 10. Disable the Termux welcome message
 echo "🤫 Disabling the Termux welcome message..."
 touch ~/.hushlogin
 
-# 10. Apply font
+# 11. Apply font
 echo ""
 echo "✅ All done! Reloading Termux settings to apply the new font..."
 termux-reload-settings
