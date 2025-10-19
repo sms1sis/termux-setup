@@ -8,7 +8,9 @@ echo "🚀 Starting comprehensive Termux setup..."
 
 # 1. Request Storage Access
 echo "📁 Requesting access to shared storage..."
-termux-setup-storage
+if ! termux-setup-storage; then
+  echo "⚠️  termux-setup-storage returned non-zero; ensure storage permission manually if needed."
+fi
 
 # 2. Update packages and install all dependencies
 echo "📦 Installing packages: zsh, git, curl, lsd, starship, htop, tsu, unzip..."
@@ -22,7 +24,7 @@ curl -fLo "$HOME/.termux/font.ttf" https://github.com/ryanoasis/nerd-fonts/raw/m
 
 # 4. Install Oh My Zsh (non-interactively)
 echo "😎 Installing Oh My Zsh..."
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+sh -c 'RUNZSH=no CHSH=no "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"' "" --unattended
 
 # 5. Install Oh My Zsh plugins
 echo "🧩 Installing zsh plugins (autosuggestions and syntax-highlighting)..."
@@ -42,46 +44,6 @@ source $ZSH/custom/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 source $ZSH/custom/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 alias ls="lsd"
 
-# 🧠 Git quick upload helper for Zsh with color messages
-upload() {
-  # Define color codes
-  GREEN="\033[0;32m"
-  YELLOW="\033[1;33m"
-  RED="\033[0;31m"
-  RESET="\033[0m"
-
-  # Check if we’re inside a git repo
-  if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    echo -e "${RED}❌ Not a Git repository!${RESET}"
-    return 1
-  fi
-
-  # Stage all changes
-  git add .
-  if [ $? -ne 0 ]; then
-    echo -e "${RED}❌ Failed to stage files.${RESET}"
-    return 1
-  fi
-
-  # Use provided commit message or fallback
-  MSG="${1:-Update}"
-
-  # Commit changes
-  if git diff --cached --quiet; then
-    echo -e "${YELLOW}⚠️  No changes to commit.${RESET}"
-  else
-    git commit -m "$MSG" >/dev/null 2>&1
-    echo -e "${GREEN}✅ Committed: ${MSG}${RESET}"
-  fi
-
-  # Push to current branch
-  CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-  if git push origin "$CURRENT_BRANCH"; then
-    echo -e "${GREEN}🚀 Pushed successfully to branch '${CURRENT_BRANCH}'!${RESET}"
-  else
-    echo -e "${RED}❌ Push failed.${RESET}"
-  fi
-}
 
 # IMPORTANT: Add your Gemini API key here if you need it.
 # export GEMINI_API_KEY="YOUR_API_KEY_HERE"
@@ -89,13 +51,28 @@ upload() {
 eval "$(starship init zsh)"
 EOF
 
-# 7. Apply Starship preset and set command timeout
-echo "✨ Applying 'gruvbox-rainbow' Starship preset..."
-mkdir -p ~/.config
-starship preset gruvbox-rainbow -o ~/.config/starship.toml
+# 7. Configure Starship prompt
+echo "✨ Configuring Starship prompt..."
+if command -v starship >/dev/null 2>&1; then
+  if starship preset --help >/dev/null 2>&1; then
+    starship preset gruvbox-rainbow -o "$HOME/.config/starship.toml"
+  else
+    echo "⚠️  starship preset not supported by this version; creating minimal config..."
+    mkdir -p "$HOME/.config"
+    echo 'add_newline = false' > "$HOME/.config/starship.toml"
+  fi
 
-echo "🔧 Setting command timeout to 1000ms..."
-sed -i '2i command_timeout = 100' ~/.config/starship.toml
+  # Ensure command_timeout is set to 100
+  CFG="$HOME/.config/starship.toml"
+  if grep -q '^command_timeout' "$CFG" 2>/dev/null; then
+    sed -i 's/^command_timeout.*/command_timeout = 100/' "$CFG"
+  else
+    echo '' >> "$CFG"
+    echo 'command_timeout = 100' >> "$CFG"
+  fi
+else
+  echo "⚠️  starship not installed; skipping preset and timeout configuration."
+fi
 
 
 
@@ -112,16 +89,17 @@ if [ ! -f "$CONFIG_FILE" ]; then
   exit 1
 fi
 
-if grep -q 'time_format' "$CONFIG_FILE"; then
-  sed -i 's/time_format = .*/time_format = "%I:%M %p"/' "$CONFIG_FILE"
+if grep -q '^time_format' "$CONFIG_FILE"; then
+  sed -i 's/^time_format.*/time_format = "%I:%M %p"/' "$CONFIG_FILE"
   echo "✅ Time format updated to 12-hour."
+elif grep -q '^\[time\]' "$CONFIG_FILE"; then
+  sed -i '/^\[time\]/a time_format = "%I:%M %p"' "$CONFIG_FILE"
+  echo "✅ Time format added to existing [time] section."
 else
-  if grep -q '\[time\]' "$CONFIG_FILE"; then
-    sed -i '/^\[time\]/a time_format = "%I:%M %p"' "$CONFIG_FILE"
-    echo "✅ Time format added and set to 12-hour."
-  else
-    echo "⚠️  Warning: [time] section not found. Could not set time format."
-  fi
+  # add [time] section if missing
+  echo -e "\n[time]\
+time_format = \"%I:%M %p\"" >> "$CONFIG_FILE"
+  echo "✅ [time] section created and time_format set to 12-hour."
 fi
 EOF
 chmod +x ~/fix_starship_time.sh
