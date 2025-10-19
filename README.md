@@ -54,6 +54,19 @@
 
 ---
 
+---
+
+⚡ All in one on clean termux just run
+
+```bash
+pkg update && pkg install git -y
+git clone https://github.com/sms1sis/termux-setup.git
+cd termux-setup
+chmod +x setup_my_termux.sh setup_git_github.sh
+./setup_my_termux.sh
+```
+---
+
 ## ⚙️ Next Steps
 
 ### 1. Configure Git and GitHub
