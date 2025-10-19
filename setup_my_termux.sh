@@ -89,15 +89,17 @@ upload() {
 eval "$(starship init zsh)"
 EOF
 
-# 7. Apply the 'gruvbox-rainbow' Starship preset
-echo "✨ Applying the 'gruvbox-rainbow' Starship preset..."
+# 7. Apply Starship preset and set command timeout
+echo "✨ Applying 'gruvbox-rainbow' Starship preset..."
 mkdir -p ~/.config
 starship preset gruvbox-rainbow -o ~/.config/starship.toml
-echo "🎨 You can customize the prompt by editing ~/.config/starship.toml"
-echo "🎨 or find more presets at https://starship.rs/presets/"
+
+echo "🔧 Setting command timeout to 1000ms..."
+sed -i '2i command_timeout = 100' ~/.config/starship.toml
 
 
-# 9. Create the time-fixing helper script
+
+# 8. Create the time-fixing helper script
 echo "🕒 Creating the fix_starship_time.sh helper script..."
 cat > ~/fix_starship_time.sh << 'EOF'
 #!/bin/bash
@@ -123,6 +125,10 @@ else
 fi
 EOF
 chmod +x ~/fix_starship_time.sh
+
+# 9. Disable the Termux welcome message
+echo "🤫 Disabling the Termux welcome message..."
+touch ~/.hushlogin
 
 # 10. Final instructions
 echo ""
