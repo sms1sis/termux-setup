@@ -108,14 +108,7 @@ chmod +x ~/fix_starship_time.sh
 echo "🤫 Disabling the Termux welcome message..."
 touch ~/.hushlogin
 
-# 10. Final instructions
+# 10. Apply font
 echo ""
 echo "✅ All done! Reloading Termux settings to apply the new font..."
 termux-reload-settings
-
-echo ""
-echo "IMPORTANT: To make Zsh your default shell, please run this final command manually:"
-echo ""
-echo "  chsh -s zsh"
-echo ""
-echo "After that, close and reopen Termux to see all the changes."
