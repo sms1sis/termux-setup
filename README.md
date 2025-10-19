@@ -52,7 +52,7 @@
 5.  **Restart Termux:**
     Close and reopen the Termux application to apply all changes.
 
-## ⚡ All in one on clean termux just run
+## ⚡ On clean termux run
 
 ```bash
 pkg update && pkg install git -y
