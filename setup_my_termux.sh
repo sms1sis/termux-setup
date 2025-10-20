@@ -24,6 +24,7 @@ curl -fLo "$HOME/.termux/font.ttf" https://github.com/ryanoasis/nerd-fonts/raw/m
 
 # 4. Install Oh My Zsh (non-interactively)
 echo "😎 Installing Oh My Zsh..."
+export RUNZSH=no
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 
 # 5. Install Oh My Zsh plugins
@@ -42,14 +43,13 @@ plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
 source $ZSH/oh-my-zsh.sh
 alias ls="lsd"
 
-
 # IMPORTANT: Add your Gemini API key here if you need it.
 # export GEMINI_API_KEY="YOUR_API_KEY_HERE"
 
 eval "$(starship init zsh)"
 EOF
 
-# 7. Configure Starship prompt
+# 7. Configure Starship prompt and helper scripts
 echo "✨ Configuring Starship prompt..."
 if command -v starship >/dev/null 2>&1; then
   if starship preset --help >/dev/null 2>&1; then
@@ -60,10 +60,9 @@ if command -v starship >/dev/null 2>&1; then
     echo 'add_newline = false' > "$HOME/.config/starship.toml"
   fi
 
-
-# 8. Create the time-fixing helper script
-echo "🕒 Creating the fix_starship_time.sh helper script..."
-cat > ~/fix_starship_time.sh << 'EOF'
+  # 8. Create the time-fixing helper script
+  echo "🕒 Creating the fix_starship_time.sh helper script..."
+  cat > ~/fix_starship_time.sh << 'EOF'
 #!/bin/bash
 # This script automatically changes the time format in the starship.toml file to 12-hour AM/PM format.
 
@@ -87,14 +86,15 @@ time_format = \"%I:%M %p\"" >> "$CONFIG_FILE"
   echo "✅ [time] section created and time_format set to 12-hour."
 fi
 EOF
-chmod +x ~/fix_starship_time.sh
+  chmod +x ~/fix_starship_time.sh
 
-#9.Creat the command_timeout-fixing helper script
-echo "🕒 Creating the fix-starship-command_timeout.sh  helper script..."
-cat > ~/fix-starship-command_timeout.sh << 'EOF'
+  # 9. Create the command_timeout-fixing helper script
+  echo "🕒 Creating the fix-starship-command_timeout.sh helper script..."
+  cat > ~/fix-starship-command_timeout.sh << 'EOF'
 #!/bin/bash
 # This script automatically changes the command-timeout value in starship.toml
 # Ensure command_timeout is set to 100
+
 CFG="$HOME/.config/starship.toml"
 
 if [ ! -f "$CFG" ]; then
@@ -108,12 +108,14 @@ if grep -q '^command_timeout' "$CFG" 2>/dev/null; then
 else
   # Insert after the first line
   sed -i '1a command_timeout = 100' "$CFG"
+  echo "✅ fix-starship-command_timeout.sh is created."
 fi
+EOF
+  chmod +x ~/fix-starship-command_timeout.sh
+
 else
   echo "⚠️  starship not installed; skipping preset and timeout configuration."
 fi
-EOF
-chmod +x ~/fix-starship-command_timeout.sh
 
 # 10. Disable the Termux welcome message
 echo "🤫 Disabling the Termux welcome message..."
