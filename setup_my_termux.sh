@@ -15,7 +15,7 @@ fi
 # 2. Update packages and install all dependencies
 echo "📦 Installing packages: zsh, git, curl, lsd, starship, htop, tsu, unzip..."
 pkg update -y && pkg upgrade -y
-pkg install -y zsh git curl lsd starship htop tsu unzip
+pkg install -y zsh git curl lsd starship htop tsu unzip which micro
 
 # 3. Install a Nerd Font (FiraCode)
 echo "✒️  Installing FiraCode Nerd Font..."
@@ -42,6 +42,7 @@ plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
 
 source $ZSH/oh-my-zsh.sh
 alias ls="lsd"
+touch ~/.hushlogin
 
 # IMPORTANT: Add your Gemini API key here if you need it.
 # export GEMINI_API_KEY="YOUR_API_KEY_HERE"
@@ -51,86 +52,9 @@ EOF
 
 # 7. Configure Starship prompt and helper scripts
 echo "✨ Configuring Starship prompt..."
-if command -v starship >/dev/null 2>&1; then
-  if starship preset --help >/dev/null 2>&1; then
-    starship preset catppuccin-powerline -o ~/.config/starship.toml
-  else
-    echo "⚠️  starship preset not supported by this version; creating minimal config..."
-    mkdir -p "$HOME/.config"
-    echo 'add_newline = false' > "$HOME/.config/starship.toml"
-  fi
-
-  # ---- Place the in-place modifications here ----
-  CFG="$HOME/.config/starship.toml"
-
-# Hide cmd_duration
-sed -i '/^\[cmd_duration\]/,/^\[/{s/disabled *= *.*/disabled = true/}' "$CFG"
-
-# Enable double-line prompt
-sed -i '/^\[line_break\]/,/^\[/{s/disabled *= *.*/disabled = false/}' "$CFG"
-
-  # 8. Create the time-fixing helper script
-  echo "🕒 Creating the fix_starship_time.sh helper script..."
-  cat > ~/fix_starship_time.sh << 'EOF'
-#!/bin/bash
-# This script automatically changes the time format in the starship.toml file to 12-hour AM/PM format.
-
-CONFIG_FILE="$HOME/.config/starship.toml"
-
-if [ ! -f "$CONFIG_FILE" ]; then
-  echo "❌ Error: starship.toml not found at $CONFIG_FILE"
-  exit 1
-fi
-
-if grep -q '^time_format' "$CONFIG_FILE"; then
-  sed -i 's/^time_format.*/time_format = "%I:%M %p"/' "$CONFIG_FILE"
-  echo "✅ Time format updated to 12-hour."
-elif grep -q '^\[time\]' "$CONFIG_FILE"; then
-  sed -i '/^\[time\]/a time_format = "%I:%M %p"' "$CONFIG_FILE"
-  echo "✅ Time format added to existing [time] section."
-else
-  # add [time] section if missing
-  echo -e "\n[time]\
-time_format = \"%I:%M %p\"" >> "$CONFIG_FILE"
-  echo "✅ [time] section created and time_format set to 12-hour."
-fi
-EOF
-  chmod +x ~/fix_starship_time.sh
-
-  # 9. Create the command_timeout-fixing helper script
-  echo "🕒 Creating the fix-starship-command_timeout.sh helper script..."
-  cat > ~/fix-starship-command_timeout.sh << 'EOF'
-#!/bin/bash
-# This script automatically changes the command-timeout value in starship.toml
-# Ensure command_timeout is set to 100
-
-CFG="$HOME/.config/starship.toml"
-
-if [ ! -f "$CFG" ]; then
-  echo "❌ Error: starship.toml not found at $CFG"
-  exit 1
-fi
-
-if grep -q '^command_timeout' "$CFG" 2>/dev/null; then
-  # If command_timeout already exists, replace its value
-  sed -i 's/^command_timeout.*/command_timeout = 100/' "$CFG"
-else
-  # Insert after the first line
-  sed -i '1a command_timeout = 100' "$CFG"
-  echo "✅ fix-starship-command_timeout.sh is created."
-fi
-EOF
-  chmod +x ~/fix-starship-command_timeout.sh
-
-else
-  echo "⚠️  starship not installed; skipping preset and timeout configuration."
-fi
-
-# 10. Disable the Termux welcome message
-echo "🤫 Disabling the Termux welcome message..."
-touch ~/.hushlogin
-
-# 11. Apply font
+starship preset catppuccin-powerline -o ~/.config/starship.toml
 echo ""
 echo "✅ All done! Reloading Termux settings to apply the new font..."
 termux-reload-settings
+chsh -s zsh
+exec zsh
