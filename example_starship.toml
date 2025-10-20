@@ -1,16 +1,128 @@
+# Genareted using starship print-config
 # Warning: This config does not include keys that have an unset value
 
 # $all is shorthand for $username$hostname$localip$shlvl$singularity$kubernetes$nats$directory$vcsh$fossil_branch$fossil_metrics$git_branch$git_commit$git_state$git_metrics$git_status$hg_branch$pijul_channel$docker_context$package$bun$c$cmake$cobol$cpp$daml$dart$deno$dotnet$elixir$elm$erlang$fennel$gleam$golang$gradle$haskell$haxe$helm$java$julia$kotlin$lua$mojo$nim$nodejs$ocaml$odin$opa$perl$php$pulumi$purescript$python$quarto$raku$rlang$red$ruby$rust$scala$solidity$swift$terraform$typst$vlang$vagrant$zig$buf$guix_shell$nix_shell$conda$pixi$meson$spack$memory_usage$aws$gcloud$openstack$azure$direnv$env_var$mise$crystal$custom$sudo$cmd_duration$line_break$jobs$time$status$container$netns$os$shell$character
 "$schema" = "https://starship.rs/config-schema.json"
-format = "$all"
+format = "[](red)$os$username[](bg:peach fg:red)$directory[](bg:yellow fg:peach)$git_branch$git_status[](fg:yellow bg:green)$c$rust$golang$nodejs$php$java$kotlin$haskell$python[](fg:green bg:sapphire)$conda[](fg:sapphire bg:lavender)$time[ ](fg:lavender)$cmd_duration$line_break$character"
 right_format = ""
 continuation_prompt = "[∙](bright-black) "
 scan_timeout = 30
 command_timeout = 100
 add_newline = true
 follow_symlinks = true
+palette = "catppuccin_mocha"
 
-[palettes]
+[palettes.catppuccin_macchiato]
+pink = "#f5bde6"
+mauve = "#c6a0f6"
+yellow = "#eed49f"
+overlay2 = "#939ab7"
+surface2 = "#5b6078"
+lavender = "#b7bdf8"
+subtext0 = "#a5adcb"
+surface1 = "#494d64"
+crust = "#181926"
+base = "#24273a"
+mantle = "#1e2030"
+surface0 = "#363a4f"
+subtext1 = "#b8c0e0"
+flamingo = "#f0c6c6"
+sapphire = "#7dc4e4"
+green = "#a6da95"
+overlay1 = "#8087a2"
+overlay0 = "#6e738d"
+red = "#ed8796"
+teal = "#8bd5ca"
+rosewater = "#f4dbd6"
+maroon = "#ee99a0"
+peach = "#f5a97f"
+sky = "#91d7e3"
+blue = "#8aadf4"
+text = "#cad3f5"
+
+[palettes.catppuccin_mocha]
+flamingo = "#f2cdcd"
+yellow = "#f9e2af"
+peach = "#fab387"
+rosewater = "#f5e0dc"
+mauve = "#cba6f7"
+green = "#a6e3a1"
+sapphire = "#74c7ec"
+blue = "#89b4fa"
+overlay2 = "#9399b2"
+red = "#f38ba8"
+sky = "#89dceb"
+subtext1 = "#bac2de"
+teal = "#94e2d5"
+surface2 = "#585b70"
+base = "#1e1e2e"
+crust = "#11111b"
+overlay0 = "#6c7086"
+lavender = "#b4befe"
+text = "#cdd6f4"
+surface0 = "#313244"
+maroon = "#eba0ac"
+subtext0 = "#a6adc8"
+overlay1 = "#7f849c"
+surface1 = "#45475a"
+mantle = "#181825"
+pink = "#f5c2e7"
+
+[palettes.catppuccin_latte]
+maroon = "#e64553"
+sapphire = "#209fb5"
+pink = "#ea76cb"
+crust = "#dce0e8"
+green = "#40a02b"
+surface1 = "#bcc0cc"
+text = "#4c4f69"
+subtext1 = "#5c5f77"
+blue = "#1e66f5"
+subtext0 = "#6c6f85"
+overlay1 = "#8c8fa1"
+peach = "#fe640b"
+surface0 = "#ccd0da"
+base = "#eff1f5"
+rosewater = "#dc8a78"
+yellow = "#df8e1d"
+teal = "#179299"
+overlay0 = "#9ca0b0"
+surface2 = "#acb0be"
+lavender = "#7287fd"
+overlay2 = "#7c7f93"
+mantle = "#e6e9ef"
+flamingo = "#dd7878"
+mauve = "#8839ef"
+red = "#d20f39"
+sky = "#04a5e5"
+
+[palettes.catppuccin_frappe]
+pink = "#f4b8e4"
+mauve = "#ca9ee6"
+peach = "#ef9f76"
+green = "#a6d189"
+teal = "#81c8be"
+text = "#c6d0f5"
+yellow = "#e5c890"
+overlay0 = "#737994"
+surface2 = "#626880"
+maroon = "#ea999c"
+subtext1 = "#b5bfe2"
+overlay1 = "#838ba7"
+base = "#303446"
+surface1 = "#51576d"
+crust = "#232634"
+blue = "#8caaee"
+lavender = "#babbf1"
+sky = "#99d1db"
+surface0 = "#414559"
+mantle = "#292c3c"
+subtext0 = "#a5adce"
+flamingo = "#eebebe"
+red = "#e78284"
+sapphire = "#85c1dc"
+overlay2 = "#949cbb"
+rosewater = "#f2d5cf"
 
 [profiles]
 
@@ -33,6 +145,19 @@ style = "blue bold"
 disabled = true
 
 [azure.subscription_aliases]
+
+[battery]
+full_symbol = "󰁹 "
+charging_symbol = "󰂄 "
+discharging_symbol = "󰂃 "
+unknown_symbol = "󰁽 "
+empty_symbol = "󰂎 "
+disabled = false
+format = "[$symbol$percentage]($style) "
+
+[[battery.display]]
+threshold = 10
+style = "red bold"
 
 [buf]
 format = "with [$symbol($version )]($style)"
@@ -63,10 +188,10 @@ detect_files = [
 detect_folders = []
 
 [c]
-format = "via [$symbol($version(-$name) )]($style)"
+format = "[[ $symbol( $version) ](fg:crust bg:green)]($style)"
 version_format = "v${raw}"
-style = "149 bold"
-symbol = "C "
+style = "bg:green"
+symbol = " "
 disabled = false
 detect_extensions = [
     "c",
@@ -91,12 +216,12 @@ commands = [
 
 [character]
 format = "$symbol "
-success_symbol = "[❯](bold green)"
-error_symbol = "[❯](bold red)"
-vimcmd_symbol = "[❮](bold green)"
-vimcmd_visual_symbol = "[❮](bold yellow)"
-vimcmd_replace_symbol = "[❮](bold purple)"
-vimcmd_replace_one_symbol = "[❮](bold purple)"
+success_symbol = "[❯](bold fg:green)"
+error_symbol = "[❯](bold fg:red)"
+vimcmd_symbol = "[❮](bold fg:green)"
+vimcmd_visual_symbol = "[❮](bold fg:yellow)"
+vimcmd_replace_symbol = "[❮](bold fg:lavender)"
+vimcmd_replace_one_symbol = "[❮](bold fg:lavender)"
 disabled = false
 
 [cmake]
@@ -114,11 +239,11 @@ detect_folders = []
 
 [cmd_duration]
 min_time = 2000
-format = "took [$duration]($style) "
-style = "yellow bold"
-show_milliseconds = false
+format = " in $duration "
+style = "bg:lavender"
+show_milliseconds = true
 disabled = true
-show_notifications = false
+show_notifications = true
 min_time_to_notify = 45000
 
 [cobol]
@@ -138,10 +263,10 @@ detect_folders = []
 
 [conda]
 truncation_length = 1
-format = "via [$symbol$environment]($style) "
-symbol = "🅒 "
-style = "green bold"
-ignore_base = true
+format = "[$symbol$environment ]($style)"
+symbol = "  "
+style = "fg:crust bg:sapphire"
+ignore_base = false
 detect_env_vars = ["!PIXI_ENVIRONMENT_NAME"]
 disabled = false
 
@@ -242,17 +367,22 @@ truncation_length = 3
 truncate_to_repo = true
 fish_style_pwd_dir_length = 0
 use_logical_path = true
-format = "[$path]($style)[$read_only]($read_only_style) "
+format = "[ $path ]($style)"
 repo_root_format = "[$before_root_path]($before_repo_root_style)[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style) "
-style = "cyan bold"
+style = "bg:peach fg:crust"
 disabled = false
 read_only = "🔒"
 read_only_style = "red"
-truncation_symbol = ""
+truncation_symbol = "…/"
 home_symbol = "~"
 use_os_path_sep = true
 
 [directory.substitutions]
+Documents = "󰈙 "
+Downloads = " "
+Music = "󰝚 "
+Pictures = " "
+Developer = "󰲋 "
 
 [direnv]
 format = "[$symbol$loaded/$allowed]($style) "
@@ -270,9 +400,9 @@ loaded_msg = "loaded"
 unloaded_msg = "not loaded"
 
 [docker_context]
-symbol = "🐳 "
-style = "blue bold"
-format = "via [$symbol$context]($style) "
+symbol = ""
+style = "bg:sapphire"
+format = "[[ $symbol( $context) ](fg:crust bg:sapphire)]($style)"
 only_with_files = true
 disabled = false
 detect_extensions = []
@@ -385,9 +515,9 @@ detect_env_vars = []
 [gcloud.project_aliases]
 
 [git_branch]
-format = "on [$symbol$branch(:$remote_branch)]($style) "
-symbol = " "
-style = "bold purple"
+format = "[[ $symbol $branch ](fg:crust bg:yellow)]($style)"
+symbol = ""
+style = "bg:yellow"
 truncation_length = 9223372036854775807
 truncation_symbol = "…"
 only_attached = false
@@ -426,8 +556,8 @@ format = '\([$state( $progress_current/$progress_total)]($style)\) '
 disabled = false
 
 [git_status]
-format = '([\[$all_status$ahead_behind\]]($style) )'
-style = "red bold"
+format = "[[($all_status$ahead_behind )](fg:crust bg:yellow)]($style)"
+style = "bg:yellow"
 stashed = '\$'
 ahead = "⇡"
 behind = "⇣"
@@ -455,10 +585,10 @@ detect_files = ["gleam.toml"]
 detect_folders = []
 
 [golang]
-format = "via [$symbol($version )]($style)"
+format = "[[ $symbol( $version) ](fg:crust bg:green)]($style)"
 version_format = "v${raw}"
-symbol = "🐹 "
-style = "bold cyan"
+symbol = ""
+style = "bg:green"
 disabled = false
 not_capable_style = "bold red"
 detect_extensions = ["go"]
@@ -494,10 +624,10 @@ style = "yellow bold"
 disabled = false
 
 [haskell]
-format = "via [$symbol($version )]($style)"
+format = "[[ $symbol( $version) ](fg:crust bg:green)]($style)"
 version_format = "v${raw}"
-symbol = "λ "
-style = "bold purple"
+symbol = ""
+style = "bg:green"
 disabled = false
 detect_extensions = [
     "hs",
@@ -564,10 +694,10 @@ disabled = false
 
 [java]
 disabled = false
-format = "via [$symbol($version )]($style)"
+format = "[[ $symbol( $version) ](fg:crust bg:green)]($style)"
 version_format = "v${raw}"
-style = "red dimmed"
-symbol = "☕ "
+style = "bg:green"
+symbol = " "
 detect_extensions = [
     "java",
     "class",
@@ -611,10 +741,10 @@ detect_files = [
 detect_folders = []
 
 [kotlin]
-format = "via [$symbol($version )]($style)"
+format = "[[ $symbol( $version) ](fg:crust bg:green)]($style)"
 version_format = "v${raw}"
-symbol = "🅺 "
-style = "bold blue"
+symbol = ""
+style = "bg:green"
 kotlin_binary = "kotlin"
 disabled = false
 detect_extensions = [
@@ -739,10 +869,10 @@ disabled = false
 heuristic = false
 
 [nodejs]
-format = "via [$symbol($version )]($style)"
+format = "[[ $symbol( $version) ](fg:crust bg:green)]($style)"
 version_format = "v${raw}"
-symbol = " "
-style = "bold green"
+symbol = ""
+style = "bg:green"
 disabled = false
 not_capable_style = "bold red"
 detect_extensions = [
@@ -818,61 +948,29 @@ disabled = false
 
 [os]
 format = "[$symbol]($style)"
-style = "bold white"
-disabled = true
+style = "bg:red fg:crust"
+disabled = false
 
 [os.symbols]
-AIX = "➿ "
-Alpaquita = "🔔 "
-AlmaLinux = "💠 "
-Alpine = "🏔️ "
-Amazon = "🙂 "
-Android = "🤖 "
-Arch = "🎗️ "
-Artix = "🎗️ "
-Bluefin = "🐟 "
-CachyOS = "🎗️ "
-CentOS = "💠 "
-Debian = "🌀 "
-DragonFly = "🐉 "
-Emscripten = "🔗 "
-EndeavourOS = "🚀 "
-Fedora = "🎩 "
-FreeBSD = "😈 "
-Garuda = "🦅 "
-Gentoo = "🗜️ "
-HardenedBSD = "🛡️ "
-Illumos = "🐦 "
-Kali = "🐉 "
-Linux = "🐧 "
-Mabox = "📦 "
-Macos = "🍎 "
-Manjaro = "🥭 "
-Mariner = "🌊 "
-MidnightBSD = "🌘 "
-Mint = "🌿 "
-NetBSD = "🚩 "
-NixOS = "❄️ "
-Nobara = "🎩 "
-OpenBSD = "🐡 "
-OpenCloudOS = "☁️ "
-openEuler = "🦉 "
-openSUSE = "🦎 "
-OracleLinux = "🦴 "
-Pop = "🍭 "
-Raspbian = "🍓 "
-Redhat = "🎩 "
-RedHatEnterprise = "🎩 "
-RockyLinux = "💠 "
-Redox = "🧪 "
-Solus = "⛵ "
-SUSE = "🦎 "
-Ubuntu = "🎯 "
-Ultramarine = "🔷 "
-Unknown = "❓ "
-Uos = "🐲 "
-Void = "  "
-Windows = "🪟 "
+Windows = ""
+Ubuntu = "󰕈"
+SUSE = ""
+Raspbian = "󰐿"
+Mint = "󰣭"
+Macos = "󰀵"
+Manjaro = ""
+Linux = "󰌽"
+Gentoo = "󰣨"
+Fedora = "󰣛"
+Alpine = ""
+Amazon = ""
+Android = ""
+Arch = "󰣇"
+Artix = "󰣇"
+CentOS = ""
+Debian = "󰣚"
+Redhat = "󱄛"
+RedHatEnterprise = "󱄛"
 
 [package]
 format = "is [$symbol$version]($style) "
@@ -905,10 +1003,10 @@ detect_files = [
 detect_folders = []
 
 [php]
-format = "via [$symbol($version )]($style)"
+format = "[[ $symbol( $version) ](fg:crust bg:green)]($style)"
 version_format = "v${raw}"
-symbol = "🐘 "
-style = "147 bold"
+symbol = ""
+style = "bg:green"
 disabled = false
 detect_extensions = ["php"]
 detect_files = [
@@ -970,10 +1068,10 @@ python_binary = [
     ["python3"],
     ["python2"],
 ]
-format = 'via [${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
+format = '[[ $symbol( $version)(\(#$virtualenv\)) ](fg:crust bg:green)]($style)'
 version_format = "v${raw}"
-style = "yellow bold"
-symbol = "🐍 "
+style = "bg:green"
+symbol = ""
 disabled = false
 detect_extensions = [
     "py",
@@ -1064,10 +1162,10 @@ detect_variables = [
 ]
 
 [rust]
-format = "via [$symbol($version )]($style)"
+format = "[[ $symbol( $version) ](fg:crust bg:green)]($style)"
 version_format = "v${raw}"
-symbol = "🦀 "
-style = "bold red"
+symbol = ""
+style = "bg:green"
 disabled = false
 detect_extensions = ["rs"]
 detect_files = ["Cargo.toml"]
@@ -1187,10 +1285,10 @@ detect_files = []
 detect_folders = [".terraform"]
 
 [time]
-time_format = "%I:%M %p"
-format = "at [$time]($style) "
-style = "bold yellow"
+format = "[[  $time ](fg:crust bg:lavender)]($style)"
+style = "bg:lavender"
 use_12hr = false
+time_format = "%I:%M %p"
 disabled = false
 utc_time_offset = "local"
 time_range = "-"
@@ -1207,10 +1305,10 @@ detect_folders = []
 
 [username]
 detect_env_vars = []
-format = "[$user]($style) in "
-style_root = "red bold"
-style_user = "yellow bold"
-show_always = false
+format = "[ $user]($style)"
+style_root = "bg:red fg:crust"
+style_user = "bg:red fg:crust"
+show_always = true
 disabled = false
 
 [username.aliases]
