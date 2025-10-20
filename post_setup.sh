@@ -45,7 +45,21 @@ edit_key_in_section() {
     return 0 # Return success
 }
 
-# 1. Ask about 12-hour time format
+# 1. Ask about command_timeout value
+read -rp "$(echo -e "${YELLOW}❓ Enter command_timeout value (default 100): ${NC}")" cmd_timeout
+cmd_timeout="${cmd_timeout:-100}"
+
+# Check if command_timeout already exists (as a global key)
+if grep -q "^command_timeout\s*=" "$CFG"; then
+    # It exists, so replace it
+    sed -i "s/^command_timeout\s*=.*/command_timeout = $cmd_timeout/" "$CFG"
+else
+    # It doesn't exist, so add it as the first line
+    sed -i "1i command_timeout = $cmd_timeout" "$CFG"
+fi
+echo -e "  ${GREEN}⏱ command_timeout set to $cmd_timeout.${NC}"
+
+# 2. Ask about 12-hour time format
 read -rp "$(echo -e "${YELLOW}❓ Do you want 12-hour AM/PM time format? (y/N): ${NC}")" use_12h
 if [[ "$use_12h" =~ ^[Yy]$ ]]; then
     # Attempt to set 12-hour format
@@ -60,20 +74,6 @@ else
         echo -e "  ${BLUE}⏰ 24-hour time format applied.${NC}"
     fi
 fi
-
-# 2. Ask about command_timeout value
-read -rp "$(echo -e "${YELLOW}❓ Enter command_timeout value (default 100): ${NC}")" cmd_timeout
-cmd_timeout="${cmd_timeout:-100}"
-
-# Check if command_timeout already exists (as a global key)
-if grep -q "^command_timeout\s*=" "$CFG"; then
-    # It exists, so replace it
-    sed -i "s/^command_timeout\s*=.*/command_timeout = $cmd_timeout/" "$CFG"
-else
-    # It doesn't exist, so add it as the first line
-    sed -i "1i command_timeout = $cmd_timeout" "$CFG"
-fi
-echo -e "  ${GREEN}⏱ command_timeout set to $cmd_timeout.${NC}"
 
 # 3. Ask about two-liner prompt
 read -rp "$(echo -e "${YELLOW}❓ Do you want a two-liner prompt? (y/N): ${NC}")" two_liner
