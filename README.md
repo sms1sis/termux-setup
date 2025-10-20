@@ -70,6 +70,11 @@ exec zsh
 ```
 ---
 
+## 👇 Note
+- In order to make the promt double liner and remove cmd_duration
+  edit ~/.config/starship.toml manually and set cmd_duration disabled = true
+  and line_break disabled = false. 
+
 ## ⚙️ Optional Steps
 
 ### 1. Configure Git and GitHub
