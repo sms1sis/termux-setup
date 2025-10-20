@@ -13,7 +13,7 @@
 
 - **Shell & Prompt**:
   - Installs `Zsh` and `Oh My Zsh`.
-  - Installs the `Starship` cross-shell prompt, pre-configured with the `gruvbox-rainbow` preset.
+  - Installs the `Starship` cross-shell prompt, pre-configured with the `catppuccin-powerline` preset.
 - **Zsh Plugins**:
   - `zsh-autosuggestions` for fish-like command suggestions.
   - `zsh-syntax-highlighting` for real-time command highlighting.
@@ -23,10 +23,9 @@
   - `lsd`: A modern `ls` replacement.
   - `htop`: An interactive process viewer.
   - `tsu`: A sudo-like utility.
-- **Automation & Helpers**:
-  - Includes a `setup_git_github.sh` script to interactively configure your Git identity and connect to GitHub via SSH.
-  - Includes a `fix_starship_time.sh` script to easily switch Starship themes to 12-hour time.
-  - Includes a `fix-starship-command_timeout.sh` script to easily set/increase command_timeout to 100.
+- **Automation**:
+  - Includes `post_setup.sh`  This is to configure starship.toml
+  - Includes  `setup_git_github.sh.sh` This is to configuring user Git identity and setting up an SSH key to connect to       GitHub.
 
 ---
 
@@ -40,33 +39,26 @@
 
 2.  **Make the scripts executable:**
     ```bash
-    chmod +x setup_my_termux.sh setup_git_github.sh
+    chmod +x setup_my_termux.sh setup_git_github.sh post_setup.sh
     ```
 
 3.  **Run the main setup script:**
     ```bash
     ./setup_my_termux.sh
     ```
+4. **Customize starship.toml**
+   ```bash
+   ./post_setup.sh
+   ```
 
-4.  **Set Zsh as the default shell:**
-    After the script finishes, run the following command manually:
-    ```bash
-    chsh -s zsh
-    ```
-
-5.  **Restart Termux:**
-    Close and reopen the Termux application to apply all changes.
-
-## ⚡ On clean termux run
-
+ # ⚡ On fresh termux run
 ```bash
 pkg update && pkg install git -y
 git clone https://github.com/sms1sis/termux-setup.git
 cd termux-setup
-chmod +x setup_my_termux.sh setup_git_github.sh
+chmod +x setup_my_termux.sh setup_git_github.sh post_setup.sh
 ./setup_my_termux.sh
-chsh -s zsh
-exec zsh
+./post_setup.sh
 ```
 ---
 
@@ -82,21 +74,13 @@ After the main setup, run the dedicated Git setup script. This will guide you th
 
 ### 2. Customize Starship
 
-The `gruvbox-rainbow` preset is installed by default. You can customize it by editing `~/.config/starship.toml`. To find more themes, visit the [Starship Presets website](https://starship.rs/presets/).
+The `catppuccin-powerline` preset is installed by default. You can customize it by editing `~/.config/starship.toml`.
+To find more themes, visit the [Starship Presets website](https://starship.rs/presets/).
 
 To apply a new preset:
 ```bash
 # Example: Apply the 'tokyo-night' preset
 starship preset tokyo-night -o ~/.config/starship.toml
-
-# Fix the time format to 12-hour (optional)
-./fix_starship_time.sh
-
-#Fix the command_timeout warning (incase)
-./fix-starship-command_timeout.sh
-
-# Restart the shell to see changes
-exec zsh
 ```
 ---
 
