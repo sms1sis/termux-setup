@@ -37,16 +37,10 @@ git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM}
 echo "✍️  Creating .zshrc configuration..."
 cat > ~/.zshrc << 'EOF'
 export ZSH="$HOME/.oh-my-zsh"
-
 plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
-
 source $ZSH/oh-my-zsh.sh
 alias ls="lsd"
 touch ~/.hushlogin
-
-# IMPORTANT: Add your Gemini API key here if you need it.
-# export GEMINI_API_KEY="YOUR_API_KEY_HERE"
-
 eval "$(starship init zsh)"
 EOF
 
