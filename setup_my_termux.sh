@@ -93,7 +93,7 @@ chmod +x ~/fix_starship_time.sh
 echo "🕒 Creating the fix-starship-command_timeout.sh  helper script..."
 cat > ~/fix-starship-command_timeout.sh << 'EOF'
 #!/bin/bash
-# This script automatically changes the command-timeout value in starship.tmol
+# This script automatically changes the command-timeout value in starship.toml
 # Ensure command_timeout is set to 100
 CFG="$HOME/.config/starship.toml"
 
