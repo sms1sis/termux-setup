@@ -60,6 +60,21 @@ if command -v starship >/dev/null 2>&1; then
     echo 'add_newline = false' > "$HOME/.config/starship.toml"
   fi
 
+  # ---- Place the in-place modifications here ----
+  CFG="$HOME/.config/starship.toml"
+
+  # Disable cmd_duration in-place
+  sed -i 's/^\(\[cmd_duration\].*\n\)\(.*disabled *= *\).*$/\1disabled = true/' "$CFG"
+
+  # Enable line_break in-place
+  sed -i 's/^\(\[line_break\].*\n\)\(.*disabled *= *\).*$/\1disabled = false/' "$CFG"
+
+  # 8. Create the time-fixing helper script...
+  # (rest of your helper scripts go here)
+else
+  echo "⚠️  starship not installed; skipping preset and timeout configuration."
+fi
+
   # 8. Create the time-fixing helper script
   echo "🕒 Creating the fix_starship_time.sh helper script..."
   cat > ~/fix_starship_time.sh << 'EOF'
