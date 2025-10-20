@@ -58,7 +58,6 @@ git clone https://github.com/sms1sis/termux-setup.git
 cd termux-setup
 chmod +x setup_my_termux.sh setup_git_github.sh post_setup.sh
 ./setup_my_termux.sh
-./post_setup.sh
 ```
 ---
 
