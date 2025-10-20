@@ -70,11 +70,10 @@ if grep -q "^command_timeout\s*=" "$CFG"; then
     # It exists, so replace it
     sed -i "s/^command_timeout\s*=.*/command_timeout = $cmd_timeout/" "$CFG"
 else
-    # It doesn't exist, so add it after the first line (at the top)
-    sed -i "1a command_timeout = $cmd_timeout" "$CFG"
+    # It doesn't exist, so add it as the first line
+    sed -i "1i command_timeout = $cmd_timeout" "$CFG"
 fi
 echo -e "  ${GREEN}⏱ command_timeout set to $cmd_timeout.${NC}"
-
 
 # 3. Ask about two-liner prompt
 read -rp "$(echo -e "${YELLOW}❓ Do you want a two-liner prompt? (y/N): ${NC}")" two_liner
