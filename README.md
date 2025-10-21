@@ -1,87 +1,125 @@
-# 📲 Termux Setup Script
+`markdown
 
-*A comprehensive shell script to automate the setup of a complete development environment on a fresh Termux installation.*
+📱 Termux Unified Setup Script
 
-## 🖥️ Output Example
-<p align="center">
-  <img src="output_example.png" alt="Script Output" width="650">
-</p>
+A single modular script to automate and customize your Termux environment — from base packages to Zsh + Starship, GitHub integration, and post‑setup tweaks.
 
 ---
 
-## ✨ Features
-
-- **Shell & Prompt**:
-  - Installs `Zsh` and `Oh My Zsh`.
-  - Installs the `Starship` cross-shell prompt, pre-configured with the `catppuccin-powerline` preset.
-- **Zsh Plugins**:
-  - `zsh-autosuggestions` for fish-like command suggestions.
-  - `zsh-syntax-highlighting` for real-time command highlighting.
-- **Fonts**:
-  - Automatically downloads and installs `FiraCode Nerd Font`.
-- **Utilities**:
-  - `lsd`: A modern `ls` replacement.
-  - `htop`: An interactive process viewer.
-  - `tsu`: A sudo-like utility.
-- **Automation**:
-  - Includes `post_setup.sh`  This is to configure starship.toml
-  - Includes  `setup_git_github.sh.sh` This is to configuring user Git identity and setting up an SSH key to connect to       GitHub.
+🖥️ Output Preview
+`
+[*] Running base setup...
+[*] Installing git...
+[*] Installing zsh...
+[*] Configuring Starship + Zsh
+[*] Setup complete! Restart Termux or run 'zsh'
+`
 
 ---
 
-## 🚀 How to Use
+✨ Features
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/sms1sis/termux-setup.git
-    cd termux-setup
-    ```
+- Base Setup
+  - Updates & upgrades Termux
+  - Installs essential packages: git, curl, wget, zsh
 
-2.  **Make the scripts executable:**
-    ```bash
-    chmod +x setup_my_termux.sh setup_git_github.sh post_setup.sh
-    ```
+- Shell & Prompt
+  - Installs Zsh
+  - Installs the blazing‑fast Starship prompt
+  - Auto‑configures .zshrc with Starship
 
-3.  **Run the main setup script:**
-    ```bash
-    ./setup_my_termux.sh
-    ```
-4. **Customize starship.toml**
-   ```bash
-   ./post_setup.sh
-   ```
+- Post Setup
+  - Interactive choice of Starship presets (catppuccin-powerline, tokyo-night, gruvbox-rainbow)
+  - Backs up existing configs before overwriting
 
- # ⚡ On fresh termux run
-```bash
-pkg update && pkg install git -y
+- Git & GitHub
+  - Configure Git username & email
+  - Generate SSH key (if not already present)
+  - Add key to SSH agent
+  - Prints public key for GitHub setup
+
+- Automation Friendly
+  - Unified script with subcommands: base, starship, git, post, all
+  - Safe shell switching (--switch for next login, --switch-now for immediate)
+
+- Safety
+  - Automatic backups of configs (.zshrc, starship.toml)
+  - Logging to termux_setup.log
+
+---
+
+🚀 Quick Start
+
+`bash
+pkg update -y && pkg install git -y
 git clone https://github.com/sms1sis/termux-setup.git
 cd termux-setup
-chmod +x setup_my_termux.sh setup_git_github.sh post_setup.sh
-./setup_my_termux.sh
-```
+chmod +x setup.sh
+`
+
 ---
 
-## ⚙️ Optional Steps
+⚡ Usage
 
-### 1. Configure Git and GitHub
+- Full setup (recommended):
+  `bash
+  ./setup.sh all --switch
+  `
+  Installs everything and sets Zsh as default for next login.
 
-After the main setup, run the dedicated Git setup script. This will guide you through configuring your Git identity and setting up an SSH key to connect to GitHub.
+- Base only:
+  `bash
+  ./setup.sh base
+  `
 
-```bash
-./setup_git_github.sh
-```
+- Starship + Zsh config:
+  `bash
+  ./setup.sh starship
+  `
 
-### 2. Customize Starship
+- Git + GitHub setup:
+  `bash
+  ./setup.sh git
+  `
 
-The `catppuccin-powerline` preset is installed by default. You can customize it by editing `~/.config/starship.toml`.
-To find more themes, visit the [Starship Presets website](https://starship.rs/presets/).
+- Post‑setup (Starship presets):
+  `bash
+  ./setup.sh post
+  `
 
-To apply a new preset:
-```bash
-# Example: Apply the 'tokyo-night' preset
-starship preset tokyo-night -o ~/.config/starship.toml
-```
+- Switch shell immediately (interactive only):
+  `bash
+  ./setup.sh all --switch-now
+  `
+
 ---
 
-## 🙌 Credit
-- [starship](https://github.com/starship/starship): Fow making the minimal, blazing-fast, and infinitely customizable prompt for any shell!
+⚙️ Optional Steps
+
+- Customize Starship
+  - Presets applied via ./setup.sh post
+  - Edit manually at ~/.config/starship.toml
+  - More themes: Starship Presets
+
+- Check Logs
+  - All actions are logged to termux_setup.log
+
+---
+
+🛠️ Troubleshooting
+
+- If chsh is not available, the script falls back to adding exec zsh in .bashrc.
+- If SSH key generation fails, check permissions on ~/.ssh and rerun ./setup.sh git.
+- For Starship issues, run starship doctor to diagnose.
+
+---
+
+🙌 Credits
+
+- Starship — minimal, blazing‑fast, infinitely customizable prompt  
+- Termux — the Android terminal emulator that makes this possible  
+
+---
+
+💡 This script is modular. Run only what you need, or all for the full experience.
+`
