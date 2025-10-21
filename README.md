@@ -1,6 +1,4 @@
-`markdown
-
-📱 Termux Unified Setup Script
+**📱 Termux Unified Setup Script**
 
 A single modular script to automate and customize your Termux environment — from base packages to Zsh + Starship, GitHub integration, and post‑setup tweaks.
 
@@ -50,47 +48,47 @@ A single modular script to automate and customize your Termux environment — fr
 
 🚀 Quick Start
 
-`bash
+```bash
 pkg update -y && pkg install git -y
 git clone https://github.com/sms1sis/termux-setup.git
 cd termux-setup
 chmod +x setup.sh
-`
+```
 
 ---
 
 ⚡ Usage
 
 - Full setup (recommended):
-  `bash
+  ```bash
   ./setup.sh all --switch
-  `
+  ```
   Installs everything and sets Zsh as default for next login.
 
 - Base only:
-  `bash
+  ```bash
   ./setup.sh base
-  `
+  ```
 
 - Starship + Zsh config:
-  `bash
+  ```bash
   ./setup.sh starship
-  `
+  ```
 
 - Git + GitHub setup:
-  `bash
+  ```bash
   ./setup.sh git
-  `
+  ```
 
 - Post‑setup (Starship presets):
-  `bash
+  ```bash
   ./setup.sh post
-  `
+  ```
 
 - Switch shell immediately (interactive only):
-  `bash
+  ```bash
   ./setup.sh all --switch-now
-  `
+  ```
 
 ---
 
@@ -122,4 +120,3 @@ chmod +x setup.sh
 ---
 
 💡 This script is modular. Run only what you need, or all for the full experience.
-`
