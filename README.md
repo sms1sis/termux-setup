@@ -1,25 +1,20 @@
-**📱 Termux Unified Setup Script**
+## **📱 Termux Unified Setup Script**
 
 A single modular script to automate and customize your Termux environment — from base packages to Zsh + Starship, GitHub integration, and post‑setup tweaks.
 
 ---
 
-🖥️ Output Preview
-`
+## 🖥️ Output Preview
+
 [*] Running base setup...
-
 [*] Installing git...
-
 [*] Installing zsh...
-
 [*] Configuring Starship + Zsh
-
 [*] Setup complete! Restart Termux or run 'zsh'
-`
 
 ---
 
-✨ Features
+## ✨ Features
 
 - Base Setup
   - Updates & upgrades Termux
@@ -50,7 +45,7 @@ A single modular script to automate and customize your Termux environment — fr
 
 ---
 
-🚀 Quick Start
+## 🚀 Quick Start
 
 ```bash
 pkg update -y && pkg install git -y
@@ -61,7 +56,7 @@ chmod +x setup.sh
 
 ---
 
-⚡ Usage
+## ⚡ Usage
 
 - Full setup (recommended):
   ```bash
@@ -96,7 +91,7 @@ chmod +x setup.sh
 
 ---
 
-⚙️ Optional Steps
+## ⚙️ Optional Steps
 
 - Customize Starship
   - Presets applied via ./setup.sh post
@@ -108,7 +103,7 @@ chmod +x setup.sh
 
 ---
 
-🛠️ Troubleshooting
+## 🛠️ Troubleshooting
 
 - If chsh is not available, the script falls back to adding exec zsh in .bashrc.
 - If SSH key generation fails, check permissions on ~/.ssh and rerun ./setup.sh git.
@@ -116,11 +111,11 @@ chmod +x setup.sh
 
 ---
 
-🙌 Credits
+## 🙌 Credits
 
 - Starship — minimal, blazing‑fast, infinitely customizable prompt  
 - Termux — the Android terminal emulator that makes this possible  
 
 ---
 
-💡 This script is modular. Run only what you need, or all for the full experience.
+## 💡 This script is modular. Run only what you need, or all for the full experience.
