@@ -4,9 +4,16 @@ A single modular script to automate and customize your Termux environment — fr
 
 ---
 
-## 🖥️ Output Example
+## 🖥️ New Output Example
 <p align="center">
   <img src="output_example.png" alt="Script Output" width="650">
+</p>
+
+---
+
+## 🖥️ Old Output Example
+<p align="center">
+  <img src="output_example_old.png" alt="Script Output" width="650">
 </p>
 
 ---
@@ -14,15 +21,29 @@ A single modular script to automate and customize your Termux environment — fr
 ## 🖥️ Output Preview
 
 ```
-[*] Running base setup...
-[*] Installing git...
-[*] Installing zsh...
-[*] Configuring Starship + Zsh
-[*] Setup complete! Restart Termux or run 'zsh'
+
+✨ Base System Setup
+
+[i] Updating and upgrading packages
+[✔] Updating and upgrading packages - Done
+[i] Installing git
+[✔] Installing git - Done
+[i] Installing curl
+[✔] Installing curl - Done
+[i] Installing wget
+[✔] Installing wget - Done
+[i] Installing zsh
+[✔] Installing zsh - Done
+[✔] Base setup complete.
 ```
 ---
 
 ## ✨ Features
+
+- Enhanced User Interface
+  - Color-coded log messages for better readability.
+  - Progress spinners for long-running tasks.
+  - Stylish banners for each setup section.
 
 - Storage Setup
   - Requests access to shared storage on your device.
