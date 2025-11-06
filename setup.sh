@@ -246,6 +246,10 @@ starship_setup() {
 }
 
 git_setup() {
+    # Set HOME explicitly to the current user's home to prevent issues if run with sudo
+    # This ensures the key is checked/created in the correct location.
+    CURRENT_USER_HOME="$HOME"
+
     section "Git & SSH Configuration"
     info "Please enter your Git credentials:"
     read -p "- Username: " gitname
@@ -253,23 +257,64 @@ git_setup() {
     git config --global user.name "$gitname"
     git config --global user.email "$gitemail"
 
-    SSH_KEY="$HOME/.ssh/id_ed25519"
-    if [ ! -f "$SSH_KEY" ]; then
-        execute "ssh-keygen -t ed25519 -C '$gitemail' -f $SSH_KEY -N ''" "Generating ed25519 SSH key"
+    # --- SSH Key Check ---
+    # Prioritize ed25519, but also check for a legacy rsa key.
+    SSH_KEY_ED25519="$CURRENT_USER_HOME/.ssh/id_ed25519"
+    SSH_KEY_RSA="$CURRENT_USER_HOME/.ssh/id_rsa"
+    SSH_KEY="" # This will hold the path to the key we find and use
+
+    if [ -f "$SSH_KEY_ED25519" ]; then
+        info "Found existing ed25519 SSH key."
+        SSH_KEY="$SSH_KEY_ED25519"
+    elif [ -f "$SSH_KEY_RSA" ]; then
+        info "Found existing rsa SSH key."
+        SSH_KEY="$SSH_KEY_RSA"
     else
-        info "SSH key already exists."
+        info "No existing SSH key found. Generating a new ed25519 key."
+        SSH_KEY="$SSH_KEY_ED25519" # Set path for the new key
+        mkdir -p "$CURRENT_USER_HOME/.ssh"
+        chmod 700 "$CURRENT_USER_HOME/.ssh"
+        execute "ssh-keygen -t ed25519 -C '$gitemail' -f $SSH_KEY -N ''" "Generating ed25519 SSH key"
     fi
-    
+
+    # --- SSH Agent and Key Display ---
+
     info "Adding SSH key to the agent..."
+    # Start the agent, suppress output, and add the key
     eval "$(ssh-agent -s)" &> /dev/null
-    ssh-add "$SSH_KEY"
-    
+    ssh-add "$SSH_KEY" &> /dev/null
+
     info "${C_BOLD}Your public SSH key:${C_RESET}"
-    cat "$SSH_KEY.pub"
+    # Use 'if' to safely display the key, handles rare cases where keygen fails
+    if [ -f "$SSH_KEY.pub" ]; then
+        cat "$SSH_KEY.pub"
+    else
+        failure "Public key file not found. Key generation may have failed."
+        return 1
+    fi
+
     warn "Please copy the key above and add it to your GitHub account."
-    read -p "Press [Enter] to test the SSH connection to GitHub..."
-    ssh -T git@github.com || warn "SSH connection test failed. Please ensure your key is added to GitHub."
+    read -p "Press [Enter] after adding the key to GitHub to test the connection..."
+
+    # --- Robust SSH Connection Test ---
+
+    info "Testing GitHub SSH connection..."
+
+    # Run the test command
+    ssh -T git@github.com
+    SSH_STATUS=$? # Capture the exit status immediately
+
+    if [ "$SSH_STATUS" -eq 0 ]; then
+        success "GitHub SSH connection is successful!"
+    else
+        # Critical failure path
+        failure "SSH connection test failed (Exit code $SSH_STATUS)."
+        warn "Please ensure your key is correctly added to GitHub and try again."
+        # Stop the script if this setup step is mandatory
+        exit 1
+    fi
 }
+
 
 post_setup() {
     section "Post-setup Starship Configuration"
