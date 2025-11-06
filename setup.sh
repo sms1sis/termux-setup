@@ -42,7 +42,7 @@ execute() {
     local cmd=$1
     local msg=$2
     info "$msg"
-    ($cmd) &> "$LOGFILE" &
+    sh -c "$cmd" &> "$LOGFILE" &
     spinner $!
     wait $!
     if [ $? -eq 0 ]; then
@@ -111,7 +111,7 @@ zsh_setup() {
     section "Zsh & Oh My Zsh Configuration"
     if [ ! -d "$HOME/.oh-my-zsh" ]; then
         export RUNZSH=no
-        execute 'sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended' "Installing Oh My Zsh"
+        execute "curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sh -s -- --unattended" "Installing Oh My Zsh"
     else
         info "Oh My Zsh already installed."
     fi
