@@ -9,12 +9,6 @@ A single modular script to automate and customize your Termux environment — fr
   <img src="output_example.png" alt="Script Output" width="650">
 </p>
 
----
-
-## 🖥️ Old Output Example
-<p align="center">
-  <img src="output_example_old.png" alt="Script Output" width="650">
-</p>
 
 ---
 
