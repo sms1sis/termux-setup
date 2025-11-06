@@ -4,15 +4,10 @@ A single modular script to automate and customize your Termux environment — fr
 
 ---
 
-## 🖥️ Output Preview
-
-```
-[*] Running base setup...
-[*] Installing git...
-[*] Installing zsh...
-[*] Configuring Starship + Zsh
-[*] Setup complete! Restart Termux or run 'zsh'
-```
+## 🖥️ Output Example
+<p align="center">
+  <img src="output_example.png" alt="Script Output" width="650">
+</p>
 ---
 
 ## ✨ Features
