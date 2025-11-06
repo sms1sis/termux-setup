@@ -42,7 +42,7 @@ execute() {
     local cmd=$1
     local msg=$2
     info "$msg"
-    ($cmd) &> "$LOGFILE" &
+    eval "$cmd" &> "$LOGFILE" &
     spinner $!
     wait $!
     if [ $? -eq 0 ]; then
