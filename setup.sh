@@ -177,6 +177,16 @@ post_setup() {
         return 0
     }
 
+    echo "Choose a Starship preset (or press Enter to skip):"
+    options=("catppuccin-powerline" "tokyo-night" "gruvbox-rainbow" "none")
+    select opt in "${options[@]}"; do
+        if [[ "$opt" != "none" && -n "$opt" ]]; then
+            starship preset "$opt" -o "$CFG"
+            log "Applied $opt preset to starship.toml"
+        fi
+        break
+    done
+
     # 1. Ask about command_timeout
     read -rp "Enter command_timeout value (default 1000): " cmd_timeout
     cmd_timeout="${cmd_timeout:-1000}"
