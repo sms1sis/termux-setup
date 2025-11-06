@@ -164,7 +164,7 @@ EOF
 starship_setup() {
     section "Starship Prompt Configuration"
     if ! command -v starship >/dev/null 2>&1; then
-        execute "curl -fsSL https://starship.rs/install.sh | bash -s -- -y" "Installing Starship"
+        execute 'sh -c "$(curl -fsSL https://starship.rs/install.sh)" -- -y -b /usr/bin' "Installing Starship"
     fi
     mkdir -p "$HOME/.config"
     starship preset catppuccin-powerline -o ~/.config/starship.toml
