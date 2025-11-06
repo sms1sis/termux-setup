@@ -150,33 +150,81 @@ switch_now() {
 }
 
 post_setup() {
-    log "Running post-setup (Starship)..."
+    log "Running interactive post-setup for Starship..."
     local CFG="$HOME/.config/starship.toml"
+
     if [ ! -f "$CFG" ]; then
+        log "starship.toml not found. Creating a default one."
         mkdir -p "$HOME/.config"
         starship preset catppuccin-powerline -o "$CFG"
-        log "Created default starship.toml"
     fi
     backup_file "$CFG"
 
-    echo "Choose a Starship preset (or press Enter to skip):"
-    options=("catppuccin-powerline" "tokyo-night" "gruvbox-rainbow" "none")
-    select opt in "${options[@]}"; do
-        if [[ "$opt" != "none" && -n "$opt" ]]; then
-            starship preset "$opt" -o "$CFG"
-            log "Applied $opt preset to starship.toml"
+    # Helper function to safely edit a key in a TOML section
+    edit_key_in_section() {
+        local section="$1" key="$2" value="$3"
+        local section_header="\[$section\]"
+        local key_pattern="^\s*$key\s*="
+        if ! grep -q "^$section_header" "$CFG"; then
+            log "Warning: Section [$section] not found. Skipping..."
+            return 1
         fi
-        break
-    done
+        if sed -n "/^$section_header/,/^\[/{ /$key_pattern/p }" "$CFG" | grep -q .; then
+            sed -i "/^$section_header/,/^\[/{s/$key_pattern.*/$key = $value/}" "$CFG"
+        else
+            sed -i "/^$section_header/a $key = $value" "$CFG"
+        fi
+        return 0
+    }
 
+    # 1. Ask about command_timeout
     read -rp "Enter command_timeout value (default 1000): " cmd_timeout
-    sed -i "1i command_timeout = ${cmd_timeout:-1000}" "$CFG"
-
-    read -rp "Use 12-hour AM/PM time format? (y/N): " use_12h
-    if [[ "$use_12h" =~ ^[Yy]$ ]]; then
-        sed -i '/\[time\]/a time_format = "%I:%M %p"' "$CFG"
-        log "Set 12-hour time format."
+    cmd_timeout="${cmd_timeout:-1000}"
+    if grep -q "^command_timeout\s*=" "$CFG"; then
+        sed -i "s/^command_timeout\s*=.*/command_timeout = $cmd_timeout/" "$CFG"
+    else
+        sed -i "1i command_timeout = $cmd_timeout" "$CFG"
     fi
+    log "command_timeout set to $cmd_timeout."
+
+    # 2. Ask about 12-hour time format
+    read -rp "Do you want 12-hour AM/PM time format? (y/N): " use_12h
+    if [[ "$use_12h" =~ ^[Yy]$ ]]; then
+        if edit_key_in_section "time" "time_format" "\"%I:%M %p\""; then
+            edit_key_in_section "time" "disabled" "false"
+            log "12-hour time format applied."
+        fi
+    else
+        if edit_key_in_section "time" "time_format" "\"%R\""; then
+            edit_key_in_section "time" "disabled" "false"
+            log "24-hour time format applied."
+        fi
+    fi
+
+    # 3. Ask about two-liner prompt
+    read -rp "Do you want a two-liner prompt? (y/N): " two_liner
+    if [[ "$two_liner" =~ ^[Yy]$ ]]; then
+        if edit_key_in_section "line_break" "disabled" "false"; then
+            log "Two-liner prompt enabled."
+        fi
+    else
+        if edit_key_in_section "line_break" "disabled" "true"; then
+            log "Two-liner prompt disabled."
+        fi
+    fi
+
+    # 4. Ask about showing command duration
+    read -rp "Do you want to show command duration? (y/N): " show_duration
+    if [[ "$show_duration" =~ ^[Yy]$ ]]; then
+        if edit_key_in_section "cmd_duration" "disabled" "false"; then
+            log "Command duration enabled."
+        fi
+    else
+        if edit_key_in_section "cmd_duration" "disabled" "true"; then
+            log "Command duration disabled."
+        fi
+    fi
+    log "Post-setup complete."
 }
 
 # --- Dispatcher ---
