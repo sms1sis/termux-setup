@@ -243,102 +243,80 @@ git_setup() {
 }
 
 post_setup() {
-    # --- Color Definitions (local) ---
-    BOLD='\033[1m'
-    GREEN='\033[0;32m'
-    YELLOW='\033[0;33m'
-    BLUE='\033[0;34m'
-    CYAN='\033[0;36m'
-    RED='\033[0;31m'
-    NC='\033[0m'
-
+    section "Post-setup Starship Configuration"
     CFG="$HOME/.config/starship.toml"
 
     if [ ! -f "$CFG" ]; then
-        echo -e "${RED}❌ starship.toml not found at $CFG${NC}"
+        warn "starship.toml not found at $CFG"
         return 1
     fi
 
-    echo -e "\n${BOLD}${CYAN}🚀 Post-setup configuration for Starship prompt${NC}\n"
+    echo -e "\n${C_BOLD}${C_CYAN}🚀 Post-setup configuration for Starship prompt${C_RESET}\n"
 
-    # Helper: ensure section exists (create if missing)
     ensure_section() {
         local section="$1"
         if ! grep -qE "^\[$section\]" "$CFG"; then
             printf "\n[%s]\n" "$section" >> "$CFG"
-            echo -e "  ${YELLOW}➕ Added missing section [$section] to $CFG${NC}"
+            info "Added missing section [$section] to $CFG"
         fi
     }
 
-    # Helper: set or add key within section (safe, handles end-of-file)
     edit_key_in_section() {
         local section="$1" key="$2" value="$3"
         local escaped_key
         escaped_key=$(printf '%s' "$key" | sed -e 's/[][\/.^$*]/\\&/g')
-
         ensure_section "$section"
-
-        # If key exists in section, replace it; otherwise append after section header
         if awk -v sec="[$section]" -v key="$key" '
             $0 ~ "^"sec { insec=1; next }
-            insec && $0 ~ "^\\[" { exit 2 } # end of section
-            insec && $0 ~ "^[[:space:]]*"key"[[:space:]]*=" { found=1; print NR; exit 0 }
-            END { if (found) exit 0; if (insec) exit 3; exit 4 }
+            insec && $0 ~ "^\\[" { exit 2 }
+            insec && $0 ~ "^[[:space:]]*"key"[[:space:]]*=" { print; exit 0 }
+            END { exit 3 }
         ' "$CFG"; then
-            # Replace existing key in section
             sed -i "/^\[$section\]/, /^\[/ s/^[[:space:]]*$escaped_key[[:space:]]*=.*/$key = $value/" "$CFG"
         else
-            # Append key right after the section header
             sed -i "/^\[$section\]/ a $key = $value" "$CFG"
         fi
-        return 0
     }
 
-    # 1. command_timeout
-    read -rp "$(printf "${YELLOW}❓ Enter command_timeout value (default 1000): ${NC}")" cmd_timeout
-    cmd_timeout="${cmd_timeout:-1000}"
-
+    read -rp "$(printf "${C_YELLOW}❓ Enter command_timeout value (default 100): ${C_RESET}")" cmd_timeout
+    cmd_timeout="${cmd_timeout:-100}"
     if grep -qE "^command_timeout[[:space:]]*=" "$CFG"; then
         sed -i "s/^command_timeout[[:space:]]*=.*/command_timeout = $cmd_timeout/" "$CFG"
     else
-        # insert at top for visibility
         sed -i "1i command_timeout = $cmd_timeout" "$CFG"
     fi
-    echo -e "  ${GREEN}⏱ command_timeout set to $cmd_timeout.${NC}"
+    info "command_timeout set to $cmd_timeout"
 
-    # 2. 12-hour time
-    read -rp "$(printf "${YELLOW}❓ Do you want 12-hour AM/PM time format? (y/N): ${NC}")" use_12h
+    read -rp "$(printf "${C_YELLOW}❓ Do you want 12-hour AM/PM time format? (y/N): ${C_RESET}")" use_12h
     if [[ "$use_12h" =~ ^[Yy]$ ]]; then
         edit_key_in_section "time" "time_format" '"%I:%M %p"'
         edit_key_in_section "time" "disabled" "false"
-        echo -e "  ${GREEN}✅ 12-hour time format applied.${NC}"
+        log "12-hour time format applied."
     else
         edit_key_in_section "time" "time_format" '"%R"'
         edit_key_in_section "time" "disabled" "false"
-        echo -e "  ${BLUE}⏰ 24-hour time format applied.${NC}"
+        log "24-hour time format applied."
     fi
 
-    # 3. two-liner prompt
-    read -rp "$(printf "${YELLOW}❓ Do you want a two-liner prompt? (y/N): ${NC}")" two_liner
+    read -rp "$(printf "${C_YELLOW}❓ Do you want a two-liner prompt? (y/N): ${C_RESET}")" two_liner
     if [[ "$two_liner" =~ ^[Yy]$ ]]; then
         edit_key_in_section "line_break" "disabled" "false"
-        echo -e "  ${GREEN}✅ Two-liner prompt enabled.${NC}"
+        log "Two-liner prompt enabled."
     else
         edit_key_in_section "line_break" "disabled" "true"
-        echo -e "  ${BLUE}➡ Two-liner prompt disabled.${NC}"
+        info "Two-liner prompt disabled."
     fi
 
-    # 4. show command duration
-    read -rp "$(printf "${YELLOW}❓ Do you want to show command duration? (y/N): ${NC}")" show_duration
+    read -rp "$(printf "${C_YELLOW}❓ Do you want to show command duration? (y/N): ${C_RESET}")" show_duration
     if [[ "$show_duration" =~ ^[Yy]$ ]]; then
         edit_key_in_section "cmd_duration" "disabled" "false"
-        echo -e "  ${GREEN}✅ Command duration enabled.${NC}"
+        log "Command duration enabled."
     else
         edit_key_in_section "cmd_duration" "disabled" "true"
-        echo -e "  ${BLUE}➡ Command duration disabled.${NC}"
+        info "Command duration disabled."
     fi
 
-    echo -e "\n${BOLD}${GREEN}🎉 Post-setup configuration complete!${NC}\n"
+    echo -e "\n${C_BOLD}${C_GREEN}🎉 Post-setup configuration complete!${C_RESET}\n"
     return 0
 }
 
