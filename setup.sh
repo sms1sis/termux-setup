@@ -89,7 +89,7 @@ storage_setup() {
 base_setup() {
     section "Base System Setup"
     execute "pkg update -y && pkg upgrade -y" "Updating and upgrading packages"
-    for p in git curl wget zsh; do install_pkg "$p"; done
+    for p in git curl wget zsh starship; do install_pkg "$p"; done
     log "Base setup complete."
 }
 
@@ -163,12 +163,57 @@ EOF
 
 starship_setup() {
     section "Starship Prompt Configuration"
-    if ! command -v starship >/dev/null 2>&1; then
-        execute 'sh -c "$(curl -fsSL https://starship.rs/install.sh)" -- -y -b /usr/bin' "Installing Starship"
-    fi
     mkdir -p "$HOME/.config"
-    starship preset catppuccin-powerline -o ~/.config/starship.toml
-    log "Starship configured with catppuccin-powerline preset."
+
+    PRESETS=("catppuccin-powerline" "gruvbox-rainbow" "tokyo-night" "pastel-powerline")
+    DEFAULT="catppuccin-powerline"
+
+    echo
+    echo -e "${C_MAGENTA}${C_BOLD}🎨 Choose a Starship preset${C_RESET}  ${C_CYAN}(press Enter for default: ${C_BOLD}$DEFAULT${C_RESET}${C_CYAN})${C_RESET}"
+    echo
+    for i in "${!PRESETS[@]}"; do
+        idx=$((i+1))
+        echo -e "  ${C_YELLOW}$idx)${C_RESET} ${C_BLUE}${PRESETS[i]}${C_RESET}"
+    done
+    echo
+    echo -n -e "${C_CYAN}Selection ${C_RESET}> "
+    read -r choice
+    echo
+
+    if [ -z "$choice" ]; then
+        CHOSEN="$DEFAULT"
+    else
+        if [[ "$choice" =~ ^[0-9]+$ ]]; then
+            if (( choice >= 1 && choice <= ${#PRESETS[@]} )); then
+                CHOSEN="${PRESETS[choice-1]}"
+            else
+                warn "Invalid number, falling back to default: $DEFAULT"
+                CHOSEN="$DEFAULT"
+            fi
+        else
+            MATCH=""
+            for p in "${PRESETS[@]}"; do
+                if [[ "$p" == "$choice" || "$p" == "$choice"* ]]; then
+                    MATCH="$p"
+                    break
+                fi
+            done
+            if [ -n "$MATCH" ]; then
+                CHOSEN="$MATCH"
+            else
+                warn "Unrecognized preset name, falling back to default: $DEFAULT"
+                CHOSEN="$DEFAULT"
+            fi
+        fi
+    fi
+
+    info "Selected preset: ${C_BOLD}$CHOSEN${C_RESET}"
+
+    if starship preset "$CHOSEN" -o "$HOME/.config/starship.toml"; then
+        log "Starship configured with ${C_BOLD}$CHOSEN${C_RESET} ${C_GREEN}✔${C_RESET}"
+    else
+        warn "Failed to apply preset $CHOSEN. You can run: starship preset $CHOSEN -o ~/.config/starship.toml"
+    fi
 }
 
 git_setup() {
@@ -198,23 +243,103 @@ git_setup() {
 }
 
 post_setup() {
-    section "Interactive Post-Setup (Starship)"
-    local CFG="$HOME/.config/starship.toml"
+    # --- Color Definitions (local) ---
+    BOLD='\033[1m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[0;33m'
+    BLUE='\033[0;34m'
+    CYAN='\033[0;36m'
+    RED='\033[0;31m'
+    NC='\033[0m'
+
+    CFG="$HOME/.config/starship.toml"
 
     if [ ! -f "$CFG" ]; then
-        warn "starship.toml not found. Creating a default one."
-        mkdir -p "$HOME/.config"
-        starship preset catppuccin-powerline -o "$CFG"
+        echo -e "${RED}❌ starship.toml not found at $CFG${NC}"
+        return 1
     fi
-    backup_file "$CFG"
 
-    edit_key_in_section() {
-        local section="$1" key="$2" value="$3"
-        # ... (implementation remains the same)
+    echo -e "\n${BOLD}${CYAN}🚀 Post-setup configuration for Starship prompt${NC}\n"
+
+    # Helper: ensure section exists (create if missing)
+    ensure_section() {
+        local section="$1"
+        if ! grep -qE "^\[$section\]" "$CFG"; then
+            printf "\n[%s]\n" "$section" >> "$CFG"
+            echo -e "  ${YELLOW}➕ Added missing section [$section] to $CFG${NC}"
+        fi
     }
 
-    # ... (rest of post_setup remains the same)
-    log "Post-setup complete."
+    # Helper: set or add key within section (safe, handles end-of-file)
+    edit_key_in_section() {
+        local section="$1" key="$2" value="$3"
+        local escaped_key
+        escaped_key=$(printf '%s' "$key" | sed -e 's/[][\/.^$*]/\\&/g')
+
+        ensure_section "$section"
+
+        # If key exists in section, replace it; otherwise append after section header
+        if awk -v sec="[$section]" -v key="$key" '
+            $0 ~ "^"sec { insec=1; next }
+            insec && $0 ~ "^\\[" { exit 2 } # end of section
+            insec && $0 ~ "^[[:space:]]*"key"[[:space:]]*=" { found=1; print NR; exit 0 }
+            END { if (found) exit 0; if (insec) exit 3; exit 4 }
+        ' "$CFG"; then
+            # Replace existing key in section
+            sed -i "/^\[$section\]/, /^\[/ s/^[[:space:]]*$escaped_key[[:space:]]*=.*/$key = $value/" "$CFG"
+        else
+            # Append key right after the section header
+            sed -i "/^\[$section\]/ a $key = $value" "$CFG"
+        fi
+        return 0
+    }
+
+    # 1. command_timeout
+    read -rp "$(printf "${YELLOW}❓ Enter command_timeout value (default 1000): ${NC}")" cmd_timeout
+    cmd_timeout="${cmd_timeout:-1000}"
+
+    if grep -qE "^command_timeout[[:space:]]*=" "$CFG"; then
+        sed -i "s/^command_timeout[[:space:]]*=.*/command_timeout = $cmd_timeout/" "$CFG"
+    else
+        # insert at top for visibility
+        sed -i "1i command_timeout = $cmd_timeout" "$CFG"
+    fi
+    echo -e "  ${GREEN}⏱ command_timeout set to $cmd_timeout.${NC}"
+
+    # 2. 12-hour time
+    read -rp "$(printf "${YELLOW}❓ Do you want 12-hour AM/PM time format? (y/N): ${NC}")" use_12h
+    if [[ "$use_12h" =~ ^[Yy]$ ]]; then
+        edit_key_in_section "time" "time_format" '"%I:%M %p"'
+        edit_key_in_section "time" "disabled" "false"
+        echo -e "  ${GREEN}✅ 12-hour time format applied.${NC}"
+    else
+        edit_key_in_section "time" "time_format" '"%R"'
+        edit_key_in_section "time" "disabled" "false"
+        echo -e "  ${BLUE}⏰ 24-hour time format applied.${NC}"
+    fi
+
+    # 3. two-liner prompt
+    read -rp "$(printf "${YELLOW}❓ Do you want a two-liner prompt? (y/N): ${NC}")" two_liner
+    if [[ "$two_liner" =~ ^[Yy]$ ]]; then
+        edit_key_in_section "line_break" "disabled" "false"
+        echo -e "  ${GREEN}✅ Two-liner prompt enabled.${NC}"
+    else
+        edit_key_in_section "line_break" "disabled" "true"
+        echo -e "  ${BLUE}➡ Two-liner prompt disabled.${NC}"
+    fi
+
+    # 4. show command duration
+    read -rp "$(printf "${YELLOW}❓ Do you want to show command duration? (y/N): ${NC}")" show_duration
+    if [[ "$show_duration" =~ ^[Yy]$ ]]; then
+        edit_key_in_section "cmd_duration" "disabled" "false"
+        echo -e "  ${GREEN}✅ Command duration enabled.${NC}"
+    else
+        edit_key_in_section "cmd_duration" "disabled" "true"
+        echo -e "  ${BLUE}➡ Command duration disabled.${NC}"
+    fi
+
+    echo -e "\n${BOLD}${GREEN}🎉 Post-setup configuration complete!${NC}\n"
+    return 0
 }
 
 switch_shell() {
