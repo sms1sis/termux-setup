@@ -12,26 +12,6 @@ A single modular script to automate and customize your Termux environment — fr
 
 ---
 
-## 🖥️ Output Preview
-
-```
-
-✨ Base System Setup
-
-[i] Updating and upgrading packages
-[✔] Updating and upgrading packages - Done
-[i] Installing git
-[✔] Installing git - Done
-[i] Installing curl
-[✔] Installing curl - Done
-[i] Installing wget
-[✔] Installing wget - Done
-[i] Installing zsh
-[✔] Installing zsh - Done
-[✔] Base setup complete.
-```
----
-
 ## ✨ Features
 
 - Enhanced User Interface
