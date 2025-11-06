@@ -198,7 +198,7 @@ starship_setup() {
     DEFAULT="catppuccin-powerline"
 
     echo
-    echo -e "${C_MAGENTA}${C_BOLD}🎨 Choose a Starship preset${C_RESET}  ${C_CYAN}(press Enter for default: ${C_BOLD}$DEFAULT${C_RESET}${C_CYAN})${C_RESET}"
+    echo -e "${C_MAGENTA}${C_BOLD}🎨 Choose a Starship preset${C_RESET}\n${C_CYAN}(press Enter for default: ${C_BOLD}$DEFAULT${C_RESET}${C_CYAN})${C_RESET}"
     echo
     for i in "${!PRESETS[@]}"; do
         idx=$((i+1))
