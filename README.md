@@ -24,32 +24,42 @@ A single modular script to automate and customize your Termux environment — fr
 
 ## ✨ Features
 
+- Storage Setup
+  - Requests access to shared storage on your device.
+
 - Base Setup
   - Updates & upgrades Termux
   - Installs essential packages: git, curl, wget, zsh
 
 - Shell & Prompt
-  - Installs Zsh
+  - Installs Zsh and the popular Oh My Zsh framework
   - Installs the blazing‑fast Starship prompt
-  - Auto‑configures .zshrc with Starship
+  - Auto‑configures .zshrc with Starship, aliases, and an `upload` helper for Git
+  - Installs `zsh-autosuggestions` and `zsh-syntax-highlighting`
+
+- Font Setup
+  - Downloads and installs the FiraCode Nerd Font for better icon support.
+
+- Tools Setup
+  - Installs useful utilities: `lsd`, `htop`, `tsu`, `unzip`, `micro`, `which`, and `openssh`.
 
 - Post Setup
-  - Interactive choice of Starship presets (catppuccin-powerline, tokyo-night, gruvbox-rainbow)
+  - Interactive choice of Starship presets
+  - Interactively configure command timeout and 12/24h time format
   - Backs up existing configs before overwriting
 
 - Git & GitHub
   - Configure Git username & email
-  - Generate SSH key (if not already present)
-  - Add key to SSH agent
-  - Prints public key for GitHub setup
+  - Generate a modern `ed25519` SSH key (if not already present)
+  - Add key to SSH agent and tests the connection to GitHub
 
 - Automation Friendly
-  - Unified script with subcommands: base, starship, git, post, all
-  - Safe shell switching (--switch for next login, --switch-now for immediate)
+  - Unified script with subcommands: `storage`, `base`, `tools`, `font`, `zsh`, `starship`, `git`, `post`, `all`
+  - Safe shell switching (`--switch` for next login, `--switch-now` for immediate)
 
 - Safety
   - Automatic backups of configs (.zshrc, starship.toml)
-  - Logging to termux_setup.log
+  - Logging to `termux_setup.log`
 
 ---
 
@@ -70,26 +80,18 @@ chmod +x setup.sh
   ```bash
   ./setup.sh all --switch
   ```
-  Installs everything and sets Zsh as default for next login.
+  Runs all setup steps and sets Zsh as default for your next login.
 
-- Base only:
+- Individual components:
   ```bash
-  ./setup.sh base
-  ```
-
-- Starship + Zsh config:
-  ```bash
-  ./setup.sh starship
-  ```
-
-- Git + GitHub setup:
-  ```bash
-  ./setup.sh git
-  ```
-
-- Post‑setup (Starship presets):
-  ```bash
-  ./setup.sh post
+  ./setup.sh storage   # Grant storage access
+  ./setup.sh base      # Install base packages
+  ./setup.sh tools     # Install utilities
+  ./setup.sh font      # Install Nerd Font
+  ./setup.sh zsh       # Configure Oh My Zsh
+  ./setup.sh starship  # Configure Starship prompt
+  ./setup.sh git       # Configure Git and GitHub SSH
+  ./setup.sh post      # Interactive post-setup tweaks
   ```
 
 - Switch shell immediately (interactive only):
@@ -102,20 +104,20 @@ chmod +x setup.sh
 ## ⚙️ Optional Steps
 
 - Customize Starship
-  - Presets applied via ./setup.sh post
-  - Edit manually at ~/.config/starship.toml
-  - More themes: Starship Presets
+  - Run `./setup.sh post` for interactive tweaks.
+  - Edit manually at `~/.config/starship.toml`.
+  - More themes: [Starship Presets](https://starship.rs/presets/)
 
 - Check Logs
-  - All actions are logged to termux_setup.log
+  - All actions are logged to `termux_setup.log`
 
 ---
 
 ## 🛠️ Troubleshooting
 
-- If chsh is not available, the script falls back to adding exec zsh in .bashrc.
-- If SSH key generation fails, check permissions on ~/.ssh and rerun ./setup.sh git.
-- For Starship issues, run starship doctor to diagnose.
+- If `chsh` is not available, the script falls back to adding `exec zsh` in `.bashrc`.
+- If SSH key generation fails, check permissions on `~/.ssh` and rerun `./setup.sh git`.
+- For Starship issues, run `starship doctor` to diagnose.
 
 ---
 

@@ -9,6 +9,7 @@ error_exit() { echo -e "[!] $1" | tee -a "$LOGFILE"; exit 1; }
 
 install_pkg() {
     local pkg=$1
+    # Use 'command -v' for POSIX compliance
     if ! command -v "$pkg" >/dev/null 2>&1; then
         log "Installing $pkg..."
         pkg install -y "$pkg" || error_exit "Failed to install $pkg"
@@ -26,6 +27,11 @@ backup_file() {
 }
 
 # --- Subcommands ---
+storage_setup() {
+    log "Requesting storage access..."
+    termux-setup-storage || log "Storage permission already granted or command failed."
+}
+
 base_setup() {
     log "Running base setup..."
     pkg update -y && pkg upgrade -y
@@ -35,7 +41,7 @@ base_setup() {
 
 tools_setup() {
     log "Installing utilities..."
-    for p in lsd htop tsu unzip micro which; do install_pkg "$p"; done
+    for p in lsd htop tsu unzip micro which openssh; do install_pkg "$p"; done
     log "Utilities installed."
 }
 
@@ -73,6 +79,29 @@ source $ZSH/oh-my-zsh.sh
 alias ls="lsd"
 touch ~/.hushlogin
 eval "$(starship init zsh)"
+
+# Git quick upload helper
+upload() {
+  GREEN="\033[0;32m"
+  YELLOW="\033[1;33m"
+  RED="\033[0;31m"
+  CYAN="\033[0;36m"
+  RESET="\033[0m"
+  echo -e "\n${CYAN}📦 Starting Git upload...${RESET}"
+  if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo -e "${RED}❌ Not a Git repository!${RESET}\n"
+    return 1
+  fi
+  git add .
+  MSG="${1:-Update}"
+  if git diff --cached --quiet; then
+    echo -e "${YELLOW}⚠️ No changes to commit.${RESET}\n"
+  else
+    git commit -m "$MSG"
+    git push
+    echo -e "${GREEN}✅ Successfully committed and pushed.${RESET}\n"
+  fi
+}
 EOF
     log "Zsh + plugins configured."
 }
@@ -94,10 +123,10 @@ git_setup() {
     git config --global user.name "$gitname"
     git config --global user.email "$gitemail"
 
-    SSH_KEY="$HOME/.ssh/id_rsa"
+    SSH_KEY="$HOME/.ssh/id_ed25519" # Using ed25519 as it's more modern
     if [ ! -f "$SSH_KEY" ]; then
-        ssh-keygen -t rsa -b 4096 -C "$gitemail" -f "$SSH_KEY" -N ""
-        log "Generated SSH key."
+        ssh-keygen -t ed25519 -C "$gitemail" -f "$SSH_KEY" -N ""
+        log "Generated ed25519 SSH key."
     else
         log "SSH key already exists, skipping."
     fi
@@ -105,6 +134,9 @@ git_setup() {
     ssh-add "$SSH_KEY"
     log "Git setup complete. Copy this key to GitHub:"
     cat "$SSH_KEY.pub"
+    read -p "Press [Enter] after adding your SSH key to GitHub to test the connection..."
+    log "Testing SSH connection to GitHub..."
+    ssh -T git@github.com
 }
 
 switch_shell() {
@@ -118,23 +150,38 @@ switch_now() {
 }
 
 post_setup() {
-    log "Running post-setup (Starship presets)..."
-    mkdir -p "$HOME/.config"
+    log "Running post-setup (Starship)..."
+    local CFG="$HOME/.config/starship.toml"
+    if [ ! -f "$CFG" ]; then
+        mkdir -p "$HOME/.config"
+        starship preset catppuccin-powerline -o "$CFG"
+        log "Created default starship.toml"
+    fi
+    backup_file "$CFG"
 
-    local STARSHIP_FILE="$HOME/.config/starship.toml"
-    backup_file "$STARSHIP_FILE"
-
-    echo "Choose a Starship preset:"
-    options=("catppuccin-powerline" "tokyo-night" "gruvbox-rainbow")
+    echo "Choose a Starship preset (or press Enter to skip):"
+    options=("catppuccin-powerline" "tokyo-night" "gruvbox-rainbow" "none")
     select opt in "${options[@]}"; do
-        starship preset "$opt" -o "$STARSHIP_FILE"
-        log "Applied $opt preset to starship.toml"
+        if [[ "$opt" != "none" && -n "$opt" ]]; then
+            starship preset "$opt" -o "$CFG"
+            log "Applied $opt preset to starship.toml"
+        fi
         break
     done
+
+    read -rp "Enter command_timeout value (default 1000): " cmd_timeout
+    sed -i "1i command_timeout = ${cmd_timeout:-1000}" "$CFG"
+
+    read -rp "Use 12-hour AM/PM time format? (y/N): " use_12h
+    if [[ "$use_12h" =~ ^[Yy]$ ]]; then
+        sed -i '/\[time\]/a time_format = "%I:%M %p"' "$CFG"
+        log "Set 12-hour time format."
+    fi
 }
 
 # --- Dispatcher ---
 case "${1:-}" in
+    storage) storage_setup ;;
     base) base_setup ;;
     tools) tools_setup ;;
     font) font_setup ;;
@@ -142,10 +189,10 @@ case "${1:-}" in
     starship) starship_setup ;;
     git) git_setup ;;
     post) post_setup ;;
-    all) base_setup; tools_setup; font_setup; zsh_setup; starship_setup; git_setup; post_setup ;;
+    all) storage_setup; base_setup; tools_setup; font_setup; zsh_setup; starship_setup; git_setup; post_setup ;;
     --switch) switch_shell ;;
     --switch-now) switch_now ;;
     *)
-        echo "Usage: $0 {base|tools|font|zsh|starship|git|post|all|--switch|--switch-now}"
+        echo "Usage: $0 {storage|base|tools|font|zsh|starship|git|post|all|--switch|--switch-now}"
         ;;
 esac
