@@ -243,80 +243,101 @@ git_setup() {
 }
 
 post_setup() {
-    section "Post-setup Starship Configuration"
+    # post-setup - Interactive script to tweak Starship prompt after initial setup
     CFG="$HOME/.config/starship.toml"
 
     if [ ! -f "$CFG" ]; then
-        warn "starship.toml not found at $CFG"
+        echo "ERROR: starship.toml not found at $CFG"
         return 1
     fi
 
-    echo -e "\n${C_BOLD}${C_CYAN}🚀 Post-setup configuration for Starship prompt${C_RESET}\n"
+    echo
+    echo "🚀 Post-setup configuration for Starship prompt"
+    echo
 
-    ensure_section() {
-        local section="$1"
-        if ! grep -qE "^\[$section\]" "$CFG"; then
-            printf "\n[%s]\n" "$section" >> "$CFG"
-            info "Added missing section [$section] to $CFG"
-        fi
-    }
-
+    # Helper function to edit a key *only* if the section exists
     edit_key_in_section() {
-        local section="$1" key="$2" value="$3"
-        local escaped_key
-        escaped_key=$(printf '%s' "$key" | sed -e 's/[][\/.^$*]/\\&/g')
-        ensure_section "$section"
-        if awk -v sec="[$section]" -v key="$key" '
-            $0 ~ "^"sec { insec=1; next }
-            insec && $0 ~ "^\\[" { exit 2 }
-            insec && $0 ~ "^[[:space:]]*"key"[[:space:]]*=" { print; exit 0 }
-            END { exit 3 }
-        ' "$CFG"; then
-            sed -i "/^\[$section\]/, /^\[/ s/^[[:space:]]*$escaped_key[[:space:]]*=.*/$key = $value/" "$CFG"
-        else
-            sed -i "/^\[$section\]/ a $key = $value" "$CFG"
+        local section="$1"
+        local key="$2"
+        local value="$3"
+        local section_header="\[$section\]" # Escaped for grep/sed
+        local key_pattern="^\s*$key\s*="
+
+        # 1. Check if section exists
+        if ! grep -q "^$section_header" "$CFG"; then
+            # Section doesn't exist. Print warning and exit function.
+            echo "  Warning: Section [$section] not found. Skipping..."
+            return 1
         fi
+
+        # 2. Section exists. Check if key exists within it.
+        if sed -n "/^$section_header/,/^\[/{ /$key_pattern/p }" "$CFG" | grep -q .; then
+            # Key exists, replace it
+            sed -i "/^$section_header/,/^\[/{s/$key_pattern.*/$key = $value/}" "$CFG"
+        else
+            # Key doesn't exist, add it after the section header
+            sed -i "/^$section_header/a $key = $value" "$CFG"
+        fi
+        return 0 # Return success
     }
 
-    read -rp "$(printf "${C_YELLOW}❓ Enter command_timeout value (default 100): ${C_RESET}")" cmd_timeout
+    # 1. Ask about command_timeout value
+    read -rp "Enter command_timeout value (default 100): " cmd_timeout
     cmd_timeout="${cmd_timeout:-100}"
-    if grep -qE "^command_timeout[[:space:]]*=" "$CFG"; then
-        sed -i "s/^command_timeout[[:space:]]*=.*/command_timeout = $cmd_timeout/" "$CFG"
+
+    # Check if command_timeout already exists (as a global key)
+    if grep -q "^command_timeout\s*=" "$CFG"; then
+        # It exists, so replace it
+        sed -i "s/^command_timeout\s*=.*/command_timeout = $cmd_timeout/" "$CFG"
     else
+        # It doesn't exist, so add it as the first line
         sed -i "1i command_timeout = $cmd_timeout" "$CFG"
     fi
-    info "command_timeout set to $cmd_timeout"
+    echo "  command_timeout set to $cmd_timeout."
 
-    read -rp "$(printf "${C_YELLOW}❓ Do you want 12-hour AM/PM time format? (y/N): ${C_RESET}")" use_12h
+    # 2. Ask about 12-hour time format
+    read -rp "Do you want 12-hour AM/PM time format? (y/N): " use_12h
     if [[ "$use_12h" =~ ^[Yy]$ ]]; then
-        edit_key_in_section "time" "time_format" '"%I:%M %p"'
-        edit_key_in_section "time" "disabled" "false"
-        log "12-hour time format applied."
+        # Attempt to set 12-hour format
+        if edit_key_in_section "time" "time_format" "\"%I:%M %p\""; then
+            edit_key_in_section "time" "disabled" "false" # Also enable
+            echo "  12-hour time format applied."
+        fi
     else
-        edit_key_in_section "time" "time_format" '"%R"'
-        edit_key_in_section "time" "disabled" "false"
-        log "24-hour time format applied."
+        # Attempt to set 24-hour format
+        if edit_key_in_section "time" "time_format" "\"%R\""; then
+            edit_key_in_section "time" "disabled" "false" # Also enable
+            echo "  24-hour time format applied."
+        fi
     fi
 
-    read -rp "$(printf "${C_YELLOW}❓ Do you want a two-liner prompt? (y/N): ${C_RESET}")" two_liner
+    # 3. Ask about two-liner prompt
+    read -rp "Do you want a two-liner prompt? (y/N): " two_liner
     if [[ "$two_liner" =~ ^[Yy]$ ]]; then
-        edit_key_in_section "line_break" "disabled" "false"
-        log "Two-liner prompt enabled."
+        if edit_key_in_section "line_break" "disabled" "false"; then
+            echo "  Two-liner prompt enabled."
+        fi
     else
-        edit_key_in_section "line_break" "disabled" "true"
-        info "Two-liner prompt disabled."
+        if edit_key_in_section "line_break" "disabled" "true"; then
+            echo "  Two-liner prompt disabled."
+        fi
     fi
 
-    read -rp "$(printf "${C_YELLOW}❓ Do you want to show command duration? (y/N): ${C_RESET}")" show_duration
+    # 4. Ask about showing command duration
+    read -rp "Do you want to show command duration? (y/N): " show_duration
     if [[ "$show_duration" =~ ^[Yy]$ ]]; then
-        edit_key_in_section "cmd_duration" "disabled" "false"
-        log "Command duration enabled."
+        if edit_key_in_section "cmd_duration" "disabled" "false"; then
+            echo "  Command duration enabled."
+        fi
     else
-        edit_key_in_section "cmd_duration" "disabled" "true"
-        info "Command duration disabled."
+        if edit_key_in_section "cmd_duration" "disabled" "true"; then
+            echo "  Command duration disabled."
+        fi
     fi
 
-    echo -e "\n${C_BOLD}${C_GREEN}🎉 Post-setup configuration complete!${C_RESET}\n"
+    echo
+    echo "🎉 Post-setup configuration complete!"
+    echo
     return 0
 }
 
