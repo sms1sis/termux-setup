@@ -135,28 +135,57 @@ alias ls="lsd"
 touch ~/.hushlogin
 eval "$(starship init zsh)"
 
-# Git quick upload helper
+# 🧠 Git quick upload helper for Zsh with colorful messages
 upload() {
   GREEN="\033[0;32m"
   YELLOW="\033[1;33m"
   RED="\033[0;31m"
   CYAN="\033[0;36m"
   RESET="\033[0m"
+
   echo -e "\n${CYAN}📦 Starting Git upload...${RESET}"
+
   if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     echo -e "${RED}❌ Not a Git repository!${RESET}\n"
     return 1
   fi
+
   git add .
+  if [ $? -ne 0 ]; then
+    echo -e "${RED}❌ Failed to stage files.${RESET}\n"
+    return 1
+  fi
+
   MSG="${1:-Update}"
+
   if git diff --cached --quiet; then
-    echo -e "${YELLOW}⚠️ No changes to commit.${RESET}\n"
+    echo -e "${YELLOW}⚠️  No changes to commit.${RESET}\n"
   else
-    git commit -m "$MSG"
-    git push
-    echo -e "${GREEN}✅ Successfully committed and pushed.${RESET}\n"
+    if git commit -m "$MSG"; then
+      echo -e "${GREEN}✅ Committed: ${MSG}${RESET}\n"
+    else
+      echo -e "${RED}❌ Commit failed.${RESET}\n"
+      return 1
+    fi
+  fi
+
+  if git remote | grep -q "^origin$"; then
+    BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    if [ "$BRANCH" = "HEAD" ]; then
+      echo -e "${YELLOW}⚠️  Detached HEAD; cannot determine branch.${RESET}\n"
+      return 1
+    fi
+
+    if git push origin "$BRANCH"; then
+      echo -e "${GREEN}🚀 Pushed successfully to branch '${BRANCH}'!${RESET}\n"
+    else
+      echo -e "${RED}❌ Push failed.${RESET}\n"
+    fi
+  else
+    echo -e "${YELLOW}⚠️  Remote 'origin' not found; push skipped.${RESET}\n"
   fi
 }
+
 EOF
     log "Zsh + plugins configured."
 }
@@ -243,17 +272,15 @@ git_setup() {
 }
 
 post_setup() {
-    # post-setup - Interactive script to tweak Starship prompt after initial setup
+    section "Post-setup Starship Configuration"
     CFG="$HOME/.config/starship.toml"
 
     if [ ! -f "$CFG" ]; then
-        echo "ERROR: starship.toml not found at $CFG"
+        warn "starship.toml not found at $CFG"
         return 1
     fi
 
-    echo
-    echo "🚀 Post-setup configuration for Starship prompt"
-    echo
+    echo -e "\n${C_BOLD}${C_CYAN}🚀 Post-setup configuration for Starship prompt${C_RESET}\n"
 
     # Helper function to edit a key *only* if the section exists
     edit_key_in_section() {
@@ -265,8 +292,7 @@ post_setup() {
 
         # 1. Check if section exists
         if ! grep -q "^$section_header" "$CFG"; then
-            # Section doesn't exist. Print warning and exit function.
-            echo "  Warning: Section [$section] not found. Skipping..."
+            echo -e "  ${C_YELLOW}⚠️ Warning: Section [$section] not found. Skipping...${C_RESET}"
             return 1
         fi
 
@@ -278,11 +304,11 @@ post_setup() {
             # Key doesn't exist, add it after the section header
             sed -i "/^$section_header/a $key = $value" "$CFG"
         fi
-        return 0 # Return success
+        return 0
     }
 
     # 1. Ask about command_timeout value
-    read -rp "Enter command_timeout value (default 100): " cmd_timeout
+    read -rp "$(printf "${C_YELLOW}❓ Enter command_timeout value (default 100): ${C_RESET}")" cmd_timeout
     cmd_timeout="${cmd_timeout:-100}"
 
     # Check if command_timeout already exists (as a global key)
@@ -293,51 +319,47 @@ post_setup() {
         # It doesn't exist, so add it as the first line
         sed -i "1i command_timeout = $cmd_timeout" "$CFG"
     fi
-    echo "  command_timeout set to $cmd_timeout."
+    echo -e "  ${C_GREEN}⏱ command_timeout set to $cmd_timeout.${C_RESET}"
 
     # 2. Ask about 12-hour time format
-    read -rp "Do you want 12-hour AM/PM time format? (y/N): " use_12h
+    read -rp "$(printf "${C_YELLOW}❓ Do you want 12-hour AM/PM time format? (y/N): ${C_RESET}")" use_12h
     if [[ "$use_12h" =~ ^[Yy]$ ]]; then
-        # Attempt to set 12-hour format
         if edit_key_in_section "time" "time_format" "\"%I:%M %p\""; then
-            edit_key_in_section "time" "disabled" "false" # Also enable
-            echo "  12-hour time format applied."
+            edit_key_in_section "time" "disabled" "false"
+            echo -e "  ${C_GREEN}✅ 12-hour time format applied.${C_RESET}"
         fi
     else
-        # Attempt to set 24-hour format
         if edit_key_in_section "time" "time_format" "\"%R\""; then
-            edit_key_in_section "time" "disabled" "false" # Also enable
-            echo "  24-hour time format applied."
+            edit_key_in_section "time" "disabled" "false"
+            echo -e "  ${C_BLUE}⏰ 24-hour time format applied.${C_RESET}"
         fi
     fi
 
     # 3. Ask about two-liner prompt
-    read -rp "Do you want a two-liner prompt? (y/N): " two_liner
+    read -rp "$(printf "${C_YELLOW}❓ Do you want a two-liner prompt? (y/N): ${C_RESET}")" two_liner
     if [[ "$two_liner" =~ ^[Yy]$ ]]; then
         if edit_key_in_section "line_break" "disabled" "false"; then
-            echo "  Two-liner prompt enabled."
+            echo -e "  ${C_GREEN}✅ Two-liner prompt enabled.${C_RESET}"
         fi
     else
         if edit_key_in_section "line_break" "disabled" "true"; then
-            echo "  Two-liner prompt disabled."
+            echo -e "  ${C_BLUE}➡ Two-liner prompt disabled.${C_RESET}"
         fi
     fi
 
     # 4. Ask about showing command duration
-    read -rp "Do you want to show command duration? (y/N): " show_duration
+    read -rp "$(printf "${C_YELLOW}❓ Do you want to show command duration? (y/N): ${C_RESET}")" show_duration
     if [[ "$show_duration" =~ ^[Yy]$ ]]; then
         if edit_key_in_section "cmd_duration" "disabled" "false"; then
-            echo "  Command duration enabled."
+            echo -e "  ${C_GREEN}✅ Command duration enabled.${C_RESET}"
         fi
     else
         if edit_key_in_section "cmd_duration" "disabled" "true"; then
-            echo "  Command duration disabled."
+            echo -e "  ${C_BLUE}➡ Command duration disabled.${C_RESET}"
         fi
     fi
 
-    echo
-    echo "🎉 Post-setup configuration complete!"
-    echo
+    echo -e "\n${C_BOLD}${C_GREEN}🎉 Post-setup configuration complete!${C_RESET}\n"
     return 0
 }
 
@@ -353,28 +375,55 @@ switch_shell() {
 # --- Dispatcher ---
 main() {
     main_banner
+
     if [ $# -eq 0 ]; then
         info "No command specified. Running 'all' by default."
         all
         return
     fi
 
-    case "${1:-}" in
-        storage) storage_setup ;; 
-        base) base_setup ;; 
-        tools) tools_setup ;; 
-        font) font_setup ;; 
-        zsh) zsh_setup ;; 
-        starship) starship_setup ;; 
-        git) git_setup ;; 
-        post) post_setup ;; 
-        all) storage_setup; base_setup; tools_setup; font_setup; zsh_setup; starship_setup; git_setup; post_setup ;; 
-        --switch) switch_shell ;; 
-        --switch-now) exec zsh ;; 
-        *) 
-            echo "Usage: $0 {storage|base|tools|font|zsh|starship|git|post|all|--switch|--switch-now}"
-            ;; 
-    esac
+    # Track whether we should run switch_shell at the end
+    RUN_SWITCH=0
+
+    # Iterate all arguments in order
+    for arg in "$@"; do
+        case "$arg" in
+            storage) storage_setup ;;
+            base) base_setup ;;
+            tools) tools_setup ;;
+            font) font_setup ;;
+            zsh) zsh_setup ;;
+            starship) starship_setup ;;
+            git) git_setup ;;
+            post) post_setup ;;
+            all)
+                storage_setup
+                base_setup
+                tools_setup
+                font_setup
+                zsh_setup
+                starship_setup
+                git_setup
+                post_setup
+                ;;
+            --switch)
+                # Defer switch until after other requested work
+                RUN_SWITCH=1
+                ;;
+            --switch-now)
+                exec zsh
+                ;;
+            *)
+                echo "Usage: $0 {storage|base|tools|font|zsh|starship|git|post|all|--switch|--switch-now}"
+                return 1
+                ;;
+        esac
+    done
+
+    # If requested, attempt to switch shell now
+    if [ "$RUN_SWITCH" -ne 0 ]; then
+        switch_shell
+    fi
 }
 
 main "$@"
