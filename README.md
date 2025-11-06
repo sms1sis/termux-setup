@@ -81,7 +81,7 @@ A single modular script to automate and customize your Termux environment — fr
 ## 🚀 Quick Start
 
 ```bash
-pkg update -y && pkg install git -y
+pkg update && pkg upgrade -y && pkg install git -y
 git clone https://github.com/sms1sis/termux-setup.git
 cd termux-setup
 chmod +x setup.sh
