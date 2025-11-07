@@ -49,7 +49,7 @@ A single modular script to automate and customize your Termux environment — fr
   - Add key to SSH agent and tests the connection to GitHub
 
 - Automation Friendly
-  - Unified script with subcommands: `storage`, `base`, `tools`, `font`, `zsh`, `starship`, `git`, `post`, `all`
+  - Unified script with subcommands: `storage`, `base`, `tools`, `font`, `zsh`, `starship`, `post`, `git`, `all`
   - Safe shell switching (`--switch` for next login, `--switch-now` for immediate)
 
 - Safety
@@ -85,8 +85,8 @@ chmod +x setup.sh
   ./setup.sh font      # Install Nerd Font
   ./setup.sh zsh       # Configure Oh My Zsh
   ./setup.sh starship  # Configure Starship prompt
-  ./setup.sh git       # Configure Git and GitHub SSH
   ./setup.sh post      # Interactive post-setup tweaks
+  ./setup.sh git       # Configure Git and GitHub SSH
   ```
 
 - Switch shell immediately (interactive only):
