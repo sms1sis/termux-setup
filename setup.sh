@@ -311,10 +311,9 @@ git_setup() {
         failure "SSH connection test failed (Exit code $SSH_STATUS)."
         warn "Please ensure your key is correctly added to GitHub and try again."
         # Stop the script if this setup step is mandatory
-        exit 1
+        return 1  # <-- CHANGE THIS: Use 'return 1' to exit the function, not the whole script
     fi
 }
-
 
 post_setup() {
     section "Post-setup Starship Configuration"
