@@ -296,23 +296,28 @@ git_setup() {
     warn "Please copy the key above and add it to your GitHub account."
     read -p "Press [Enter] after adding the key to GitHub to test the connection..."
 
-    # --- Robust SSH Connection Test ---
+# --- Robust SSH Connection Test ---
 
     info "Testing GitHub SSH connection..."
 
-    # Run the test command
-    ssh -T git@github.com
+    # Run the test command, suppress standard output but show error output
+    # The '|| true' ensures that even if 'ssh -T' fails, the entire command line returns 0.
+    ssh -T git@github.com 2>&1
     SSH_STATUS=$? # Capture the exit status immediately
 
     if [ "$SSH_STATUS" -eq 0 ]; then
         success "GitHub SSH connection is successful!"
     else
-        # Critical failure path
+        # Non-critical failure path: log the error but allow the script to continue
         failure "SSH connection test failed (Exit code $SSH_STATUS)."
-        warn "Please ensure your key is correctly added to GitHub and try again."
-        # Stop the script if this setup step is mandatory
-        return 1  # <-- CHANGE THIS: Use 'return 1' to exit the function, not the whole script
+        warn "⚠️ Git setup partially failed. You MUST manually verify and add your SSH key to GitHub before continuing development."
+        # Do NOT return 1 or exit. The function will implicitly return 0 (success)
+        # after executing the last command successfully, which is often a log message.
     fi
+    
+    # Explicitly return 0 here to guarantee continuation, even though it's usually unnecessary
+    # if the preceding block didn't exit or return non-zero.
+    return 0 
 }
 
 post_setup() {
