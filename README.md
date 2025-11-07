@@ -118,8 +118,8 @@ chmod +x setup.sh
 
 ## 🙌 Credits
 
-- Starship — minimal, blazing‑fast, infinitely customizable prompt  
-- Termux — the Android terminal emulator that makes this possible  
+- [Starship](https://github.com/starship/starship) — minimal, blazing‑fast, infinitely customizable prompt  
+- [Termux](https://github.com/termux/termux-app) — the Android terminal emulator that makes this possible  
 
 ---
 
