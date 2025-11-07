@@ -74,7 +74,7 @@ main_banner() {
     echo -e "${C_BLUE}${C_BOLD}"
     echo "╔════════════════════════════════════════════════════════════╗"
     echo "║                                                            ║"
-    echo "║          🚀 Termux Unified Setup Script 🚀                 ║"
+    echo "║             🚀 Termux Unified Setup Script 🚀              ║"
     echo "║                                                            ║"
     echo "╚════════════════════════════════════════════════════════════╝"
     echo -e "${C_RESET}"
@@ -339,58 +339,51 @@ post_setup() {
 
 git_setup() {
     section "Git & SSH Configuration"
-    info "Please enter your Git credentials:"
-    read -p "- Username: " gitname
-    read -p "- Email: " gitemail
-    git config --global user.name "$gitname"
-    git config --global user.email "$gitemail"
-    log "Git global user configuration complete."
 
-    SSH_KEY_ED25519="$HOME/.ssh/id_ed25519"
-    SSH_KEY_RSA="$HOME/.ssh/id_rsa"
-    SSH_KEY=""
+    info "${C_CYAN}Enter your Git credentials (or press Enter to keep existing):${C_RESET}"
+    echo
+    echo -n -e "- ${C_YELLOW}Username [$(git config --global user.name)]:${C_RESET} "
+    read gitname
+    echo -n -e "- ${C_YELLOW}Email [$(git config --global user.email)]:${C_RESET} "
+    read gitemail
 
-    if [ -f "$SSH_KEY_ED25519" ]; then
-        info "Found existing ${C_BOLD}ed25519${C_RESET}${C_CYAN} SSH key.${C_RESET}"
-        SSH_KEY="$SSH_KEY_ED25519"
-    elif [ -f "$SSH_KEY_RSA" ]; then
-        info "Found existing ${C_BOLD}rsa${C_RESET}${C_CYAN} SSH key.${C_RESET}"
-        SSH_KEY="$SSH_KEY_RSA"
-    else
-        info "No existing SSH key found. Generating a new ${C_BOLD}ed25519${C_RESET}${C_CYAN} key.${C_RESET}"
-        SSH_KEY="$SSH_KEY_ED25519"
+    if [ -n "$gitname" ]; then git config --global user.name "$gitname"; fi
+    if [ -n "$gitemail" ]; then git config --global user.email "$gitemail"; fi
+    log "${C_GREEN}Git global user configuration updated.${C_RESET}"
+
+    SSH_KEY_PATH="$HOME/.ssh/id_ed25519"
+    if [ ! -f "$SSH_KEY_PATH" ]; then
+        info "${C_YELLOW}No existing ed25519 SSH key found. Generating a new one.${C_RESET}"
         mkdir -p "$HOME/.ssh"
         chmod 700 "$HOME/.ssh"
-        execute "ssh-keygen -t ed25519 -C '$gitemail' -f $SSH_KEY -N ''" "Generating ed25519 SSH key"
-    fi
-
-    info "Adding SSH key to the agent..."
-    eval "$(ssh-agent -s)" &> /dev/null || true
-    ssh-add "$SSH_KEY" &> /dev/null || true
-
-    info "${C_BOLD}Your public SSH key:${C_RESET}"
-    if [ -f "$SSH_KEY.pub" ]; then
-        cat "$SSH_KEY.pub"
+        ssh-keygen -t ed25519 -C "$(git config --global user.email)" -f "$SSH_KEY_PATH" -N ""
     else
-        warn "Public key file not found. Key generation may have failed."
+        info "${C_GREEN}Existing ed25519 SSH key found.${C_RESET}"
     fi
 
-    warn "Please ${C_BOLD}copy the key above and add it to your GitHub account.${C_RESET}${C_YELLOW}"
-    read -p "Press [Enter] after adding the key to GitHub to test the connection..."
+    info "${C_CYAN}Starting ssh-agent and adding key...${C_RESET}"
+    echo
+    eval "$(ssh-agent -s)"
+    ssh-add "$SSH_KEY_PATH"
 
-    info "Testing GitHub SSH connection..."
+    info "${C_BOLD}Your public SSH key is:${C_RESET}"
+    echo -e "${C_CYAN}"
+    cat "$SSH_KEY_PATH.pub"
+    echo -e "${C_RESET}"
 
-    ssh -T git@github.com 2>&1 | grep -q 'successfully authenticated'
-    SSH_STATUS=$?
+    warn "${C_BOLD}Copy the key and add it to your GitHub account.${C_RESET}"
+    read -p "Press [Enter] to test the connection..."
+    echo
+    info "${C_CYAN}Testing GitHub SSH connection...${C_RESET}"
+    SSH_OUTPUT=$(ssh -T git@github.com 2>&1)
 
-    if [ "$SSH_STATUS" -eq 0 ]; then
-        log "GitHub SSH connection is successful! ${C_GREEN}✔${C_RESET}"
+    if [[ "$SSH_OUTPUT" == *"successfully authenticated"* ]]; then
+        log "${C_GREEN}GitHub SSH connection is successful! ✔${C_RESET}"
     else
-        failure "GitHub SSH connection test failed (${C_BOLD}Exit code $SSH_STATUS${C_RESET}${C_RED})."
-        warn "⚠️ ${C_BOLD}Git setup partially failed.${C_RESET}${C_YELLOW} You MUST manually verify and add your SSH key to GitHub."
+        error_exit "${C_RED}GitHub SSH connection failed. Manually verify your key.${C_RESET}"
     fi
 
-    return 0 
+    return 0
 }
 
 switch_shell() {
