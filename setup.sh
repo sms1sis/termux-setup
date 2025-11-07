@@ -2,7 +2,7 @@
 # Termux Unified Setup Script
 
 # --- Boilerplate and Utilities ---
-set -euo pipefail
+set -uo pipefail
 LOGFILE="$HOME/termux_setup.log"
 
 # --- Color Definitions ---
@@ -245,81 +245,6 @@ starship_setup() {
     fi
 }
 
-git_setup() {
-    # Set HOME explicitly to the current user's home to prevent issues if run with sudo
-    # This ensures the key is checked/created in the correct location.
-    CURRENT_USER_HOME="$HOME"
-
-    section "Git & SSH Configuration"
-    info "Please enter your Git credentials:"
-    read -p "- Username: " gitname
-    read -p "- Email: " gitemail
-    git config --global user.name "$gitname"
-    git config --global user.email "$gitemail"
-
-    # --- SSH Key Check ---
-    # Prioritize ed25519, but also check for a legacy rsa key.
-    SSH_KEY_ED25519="$CURRENT_USER_HOME/.ssh/id_ed25519"
-    SSH_KEY_RSA="$CURRENT_USER_HOME/.ssh/id_rsa"
-    SSH_KEY="" # This will hold the path to the key we find and use
-
-    if [ -f "$SSH_KEY_ED25519" ]; then
-        info "Found existing ed25519 SSH key."
-        SSH_KEY="$SSH_KEY_ED25519"
-    elif [ -f "$SSH_KEY_RSA" ]; then
-        info "Found existing rsa SSH key."
-        SSH_KEY="$SSH_KEY_RSA"
-    else
-        info "No existing SSH key found. Generating a new ed25519 key."
-        SSH_KEY="$SSH_KEY_ED25519" # Set path for the new key
-        mkdir -p "$CURRENT_USER_HOME/.ssh"
-        chmod 700 "$CURRENT_USER_HOME/.ssh"
-        execute "ssh-keygen -t ed25519 -C '$gitemail' -f $SSH_KEY -N ''" "Generating ed25519 SSH key"
-    fi
-
-    # --- SSH Agent and Key Display ---
-
-    info "Adding SSH key to the agent..."
-    # Start the agent, suppress output, and add the key
-    eval "$(ssh-agent -s)" &> /dev/null
-    ssh-add "$SSH_KEY" &> /dev/null
-
-    info "${C_BOLD}Your public SSH key:${C_RESET}"
-    # Use 'if' to safely display the key, handles rare cases where keygen fails
-    if [ -f "$SSH_KEY.pub" ]; then
-        cat "$SSH_KEY.pub"
-    else
-        failure "Public key file not found. Key generation may have failed."
-        return 1
-    fi
-
-    warn "Please copy the key above and add it to your GitHub account."
-    read -p "Press [Enter] after adding the key to GitHub to test the connection..."
-
-# --- Robust SSH Connection Test ---
-
-    info "Testing GitHub SSH connection..."
-
-    # Run the test command, suppress standard output but show error output
-    # The '|| true' ensures that even if 'ssh -T' fails, the entire command line returns 0.
-    ssh -T git@github.com 2>&1
-    SSH_STATUS=$? # Capture the exit status immediately
-
-    if [ "$SSH_STATUS" -eq 0 ]; then
-        success "GitHub SSH connection is successful!"
-    else
-        # Non-critical failure path: log the error but allow the script to continue
-        failure "SSH connection test failed (Exit code $SSH_STATUS)."
-        warn "⚠️ Git setup partially failed. You MUST manually verify and add your SSH key to GitHub before continuing development."
-        # Do NOT return 1 or exit. The function will implicitly return 0 (success)
-        # after executing the last command successfully, which is often a log message.
-    fi
-    
-    # Explicitly return 0 here to guarantee continuation, even though it's usually unnecessary
-    # if the preceding block didn't exit or return non-zero.
-    return 0 
-}
-
 post_setup() {
     section "Post-setup Starship Configuration"
     CFG="$HOME/.config/starship.toml"
@@ -412,6 +337,62 @@ post_setup() {
     return 0
 }
 
+git_setup() {
+    section "Git & SSH Configuration"
+    info "Please enter your Git credentials:"
+    read -p "- Username: " gitname
+    read -p "- Email: " gitemail
+    git config --global user.name "$gitname"
+    git config --global user.email "$gitemail"
+    log "Git global user configuration complete."
+
+    SSH_KEY_ED25519="$HOME/.ssh/id_ed25519"
+    SSH_KEY_RSA="$HOME/.ssh/id_rsa"
+    SSH_KEY=""
+
+    if [ -f "$SSH_KEY_ED25519" ]; then
+        info "Found existing ${C_BOLD}ed25519${C_RESET}${C_CYAN} SSH key.${C_RESET}"
+        SSH_KEY="$SSH_KEY_ED25519"
+    elif [ -f "$SSH_KEY_RSA" ]; then
+        info "Found existing ${C_BOLD}rsa${C_RESET}${C_CYAN} SSH key.${C_RESET}"
+        SSH_KEY="$SSH_KEY_RSA"
+    else
+        info "No existing SSH key found. Generating a new ${C_BOLD}ed25519${C_RESET}${C_CYAN} key.${C_RESET}"
+        SSH_KEY="$SSH_KEY_ED25519"
+        mkdir -p "$HOME/.ssh"
+        chmod 700 "$HOME/.ssh"
+        execute "ssh-keygen -t ed25519 -C '$gitemail' -f $SSH_KEY -N ''" "Generating ed25519 SSH key"
+    fi
+
+    info "Adding SSH key to the agent..."
+    eval "$(ssh-agent -s)" &> /dev/null || true
+    ssh-add "$SSH_KEY" &> /dev/null || true
+
+    info "${C_BOLD}Your public SSH key:${C_RESET}"
+    if [ -f "$SSH_KEY.pub" ]; then
+        cat "$SSH_KEY.pub"
+    else
+        warn "Public key file not found. Key generation may have failed."
+    fi
+
+    warn "Please ${C_BOLD}copy the key above and add it to your GitHub account.${C_RESET}${C_YELLOW}"
+    read -p "Press [Enter] after adding the key to GitHub to test the connection..."
+
+    info "Testing GitHub SSH connection..."
+
+    ssh -T git@github.com 2>&1 | grep -q 'successfully authenticated'
+    SSH_STATUS=$?
+
+    if [ "$SSH_STATUS" -eq 0 ]; then
+        log "GitHub SSH connection is successful! ${C_GREEN}✔${C_RESET}"
+    else
+        failure "GitHub SSH connection test failed (${C_BOLD}Exit code $SSH_STATUS${C_RESET}${C_RED})."
+        warn "⚠️ ${C_BOLD}Git setup partially failed.${C_RESET}${C_YELLOW} You MUST manually verify and add your SSH key to GitHub."
+    fi
+
+    return 0 
+}
+
 switch_shell() {
     section "Switching Default Shell"
     if chsh -s zsh; then
@@ -443,8 +424,8 @@ main() {
             font) font_setup ;;
             zsh) zsh_setup ;;
             starship) starship_setup ;;
-            git) git_setup ;;
             post) post_setup ;;
+            git) git_setup ;;
             all)
                 storage_setup
                 base_setup
@@ -452,8 +433,8 @@ main() {
                 font_setup
                 zsh_setup
                 starship_setup
-                git_setup
                 post_setup
+                git_setup
                 ;;
             --switch)
                 # Defer switch until after other requested work
