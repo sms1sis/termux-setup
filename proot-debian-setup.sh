@@ -350,8 +350,8 @@ post_setup() {
     }
 
     # 1. Ask about command_timeout value
-    read -rp "$(printf "${C_YELLOW}❓ Enter command_timeout value (default 100): ${C_RESET}")" cmd_timeout
-    cmd_timeout="${cmd_timeout:-100}"
+    read -rp "$(printf "${C_CYAN}❓ Enter command_timeout value (default 1000): ${C_RESET}")" cmd_timeout
+    cmd_timeout="${cmd_timeout:-1000}"
 
     # Check if command_timeout already exists (as a global key)
     if grep -q "^command_timeout\s*=" "$CFG"; then
@@ -364,7 +364,7 @@ post_setup() {
     echo -e "  ${C_GREEN}⏱ command_timeout set to $cmd_timeout.${C_RESET}"
 
     # 2. Ask about 12-hour time format
-    read -rp "$(printf "${C_YELLOW}❓ Do you want 12-hour AM/PM time format? (y/N): ${C_RESET}")" use_12h
+    read -rp "$(printf "${C_CYAN}❓ Do you want 12-hour AM/PM time format? (y/N): ${C_RESET}")" use_12h
     if [[ "$use_12h" =~ ^[Yy]$ ]]; then
         if edit_key_in_section "time" "time_format" "\"%I:%M %p\""; then
             edit_key_in_section "time" "disabled" "false"
@@ -378,7 +378,7 @@ post_setup() {
     fi
 
     # 3. Ask about two-liner prompt
-    read -rp "$(printf "${C_YELLOW}❓ Do you want a two-liner prompt? (y/N): ${C_RESET}")" two_liner
+    read -rp "$(printf "${C_CYAN}❓ Do you want a two-liner prompt? (y/N): ${C_RESET}")" two_liner
     if [[ "$two_liner" =~ ^[Yy]$ ]]; then
         if edit_key_in_section "line_break" "disabled" "false"; then
             echo -e "  ${C_GREEN}✅ Two-liner prompt enabled.${C_RESET}"
@@ -390,7 +390,7 @@ post_setup() {
     fi
 
     # 4. Ask about showing command duration
-    read -rp "$(printf "${C_YELLOW}❓ Do you want to show command duration? (y/N): ${C_RESET}")" show_duration
+    read -rp "$(printf "${C_CYAN}❓ Do you want to show command duration? (y/N): ${C_RESET}")" show_duration
     if [[ "$show_duration" =~ ^[Yy]$ ]]; then
         if edit_key_in_section "cmd_duration" "disabled" "false"; then
             echo -e "  ${C_GREEN}✅ Command duration enabled.${C_RESET}"

@@ -86,6 +86,7 @@ If `sudo` is not yet installed in your container or your user lacks permissions:
 | `./setup.sh tools` | Install developer utilities. |
 | `./setup.sh zsh` | Configure Zsh + Oh My Zsh + Plugins. |
 | `./setup.sh starship` | Configure Starship prompt & choose preset. |
+| `./setup.sh post` | Customize Starship Configuration. |
 | `./setup.sh git` | Setup Git user & generate SSH keys. |
 
 ---
