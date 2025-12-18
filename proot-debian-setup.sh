@@ -16,6 +16,17 @@ C_BLUE='\033[0;34m'
 C_BOLD='\033[1m'
 C_UNDERLINE='\033[4m'
 
+# --- Privilege Handling ---
+SUDO=""
+if [ "$(id -u)" -ne 0 ]; then
+    if command -v sudo >/dev/null 2>&1; then
+        SUDO="sudo"
+    else
+        warn "Running as non-root and 'sudo' is not installed."
+        info "Please run this script as root first (proot-distro login ubuntu) to install sudo."
+    fi
+fi
+
 # --- Logging Functions ---
 log()     { echo -e "${C_GREEN}[✔]${C_RESET} $1" | tee -a "$LOGFILE"; }
 warn()    { echo -e "${C_YELLOW}[!]${C_RESET} $1" | tee -a "$LOGFILE"; }
@@ -42,9 +53,11 @@ execute() {
     local cmd=$1
     local msg=$2
     info "$msg"
-    # Ensure non-interactive mode for apt commands
-    if [[ "$cmd" == *"apt install"* ]]; then
-        cmd="DEBIAN_FRONTEND=noninteractive $cmd"
+    # Ensure non-interactive mode for apt commands and apply sudo
+    if [[ "$cmd" == *"apt install"* || "$cmd" == *"apt update"* || "$cmd" == *"apt upgrade"* ]]; then
+        cmd="DEBIAN_FRONTEND=noninteractive $SUDO $cmd"
+    else
+        cmd="$SUDO $cmd"
     fi
     sh -c "$cmd" &> "$LOGFILE" &
     spinner $!
@@ -52,7 +65,7 @@ execute() {
     if [ $? -eq 0 ]; then
         log "$msg - Done"
     else
-        error_exit "$msg - Failed"
+        error_exit "$msg - Failed (Check $LOGFILE for details)"
     fi
 }
 
@@ -90,8 +103,12 @@ main_banner() {
 base_setup() {
     section "Base System Setup"
     execute "apt update -y && apt upgrade -y" "Updating and upgrading packages"
-    for p in git curl wget zsh; do install_pkg "$p"; done
-    execute "curl -sS https://starship.rs/install.sh | sh -s -- -y" "Installing latest Starship via official script"
+    for p in sudo git curl wget zsh; do install_pkg "$p"; done
+    if command -v starship >/dev/null 2>&1; then
+        info "Starship already installed."
+    else
+        execute "curl -sS https://starship.rs/install.sh | sh -s -- -y" "Installing latest Starship via official script"
+    fi
     log "Base setup complete."
 }
 
@@ -441,21 +458,16 @@ git_setup() {
 
 switch_shell() {
     section "Switching Default Shell"
-    # Use the absolute path /bin/zsh which is standard in Debian
-    if chsh -s /bin/zsh; then
-        log "Default shell set to Zsh. Please run 'exit' and then 'proot-distro login debian' to apply."
+    # Use the absolute path /usr/bin/zsh which is standard
+    if $SUDO chsh -s /usr/bin/zsh "$USER"; then
+        log "Default shell set to Zsh for $USER. Please run 'exit' and then log back in to apply."
     else
-        error_exit "'chsh' command failed. You may not have necessary permissions, or /bin/zsh is incorrect. Run 'which zsh' to confirm path."
+        error_exit "'chsh' command failed. You may not have necessary permissions, or /usr/bin/zsh is incorrect. Run 'which zsh' to confirm path."
     fi
 }
 
 # --- Dispatcher ---
 main() {
-    # Check for root privileges
-    if [ "$(id -u)" -ne 0 ]; then
-        error_exit "This script must be run as root. Please run 'proot-distro login ubuntu' and try again."
-    fi
-
     main_banner
 
     # Ensure all components run if no argument is specified

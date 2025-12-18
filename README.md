@@ -1,10 +1,12 @@
 ## **📱 Termux Unified Setup Script**
 
-A single modular script to automate and customize your Termux environment — from base packages to Zsh + Starship, GitHub integration, and post‑setup tweaks.
+A modular suite of scripts to automate and customize your development environment on Android. It supports both **Native Termux** and **Proot-Distro (Ubuntu/Debian)** environments.
+
+The goal: Transform a fresh install into a powerful, visually appealing CLI workspace with minimal effort.
 
 ---
 
-## 🖥️ New Output Example
+## 🖥️ Output Example
 <p align="center">
   <img src="output_example.png" alt="Script Output" width="650">
 </p>
@@ -12,115 +14,98 @@ A single modular script to automate and customize your Termux environment — fr
 
 ---
 
-## ✨ Features
+## ✨ Features (Common)
 
-- Enhanced User Interface
-  - Color-coded log messages for better readability.
-  - Progress spinners for long-running tasks.
-  - Stylish banners for each setup section.
-
-- Storage Setup
-  - Requests access to shared storage on your device.
-
-- Base Setup
-  - Updates & upgrades Termux
-  - Installs essential packages: git, curl, wget, zsh
-
-- Shell & Prompt
-  - Installs Zsh and the popular Oh My Zsh framework
-  - Installs the blazing‑fast Starship prompt
-  - Auto‑configures .zshrc with Starship, aliases, and an `upload` helper for Git
-  - Installs `zsh-autosuggestions` and `zsh-syntax-highlighting`
-
-- Font Setup
-  - Downloads and installs the FiraCode Nerd Font for better icon support.
-
-- Tools Setup
-  - Installs useful utilities: `lsd`, `htop`, `tsu`, `unzip`, `micro`, `which`, and `openssh`.
-
-- Post Setup
-  - Interactive choice of Starship presets
-  - Interactively configure command timeout and 12/24h time format
-  - Backs up existing configs before overwriting
-
-- Git & GitHub
-  - Configure Git username & email
-  - Generate a modern `ed25519` SSH key (if not already present)
-  - Add key to SSH agent and tests the connection to GitHub
-
-- Automation Friendly
-  - Unified script with subcommands: `storage`, `base`, `tools`, `font`, `zsh`, `starship`, `post`, `git`, `all`
-  - Safe shell switching (`--switch` for next login, `--switch-now` for immediate)
-
-- Safety
-  - Automatic backups of configs (.zshrc, starship.toml)
-  - Logging to `termux_setup.log`
+- **Enhanced UI:** Color-coded logs, progress spinners, and stylish banners.
+- **Shell & Prompt:** Installs **Zsh**, **Oh My Zsh**, and the **Starship** prompt.
+- **Plugins:** Auto-installs `zsh-autosuggestions` and `zsh-syntax-highlighting`.
+- **Git Integration:** Auto-configures global user/email, generates `ed25519` SSH keys, and tests GitHub connectivity. Includes a custom `upload` alias for quick commits.
+- **Config Management:** Automatically backs up existing files (`.zshrc`, `starship.toml`) before overwriting.
 
 ---
 
-## 🚀 Quick Start
+## 📦 Components
+
+### 1. `setup.sh` (Native Termux)
+Designed for the host Termux environment.
+- **Storage:** Requests Android storage access.
+- **Font:** Installs **FiraCode Nerd Font** for icon support.
+- **Tools:** `lsd`, `htop`, `micro`, `openssh`, etc.
+
+### 2. `proot-debian-setup.sh` (Ubuntu/Debian Proot)
+An advanced adapter for Linux distributions running via `proot-distro`.
+- **Sudo-Aware:** Automatically detects if running as **Root** or **User**. Uses `sudo` for system commands when needed.
+- **Conflict Resolution:** Configures `.zshrc` to prioritize native container paths (`/usr/bin`) over Termux host paths, fixing "binary bleeding" issues.
+- **Latest Starship:** Installs Starship via the official installer to `/usr/local/bin`, ensuring the latest version (avoiding stale apt packages).
+- **Multi-User:** Can be used to set up the Root account *and* regular users.
+
+---
+
+## 🚀 Quick Start (Native Termux)
 
 ```bash
 pkg update && pkg upgrade -y && pkg install git -y
 git clone https://github.com/sms1sis/termux-setup.git
 cd termux-setup
 chmod +x setup.sh
+
+# Run full setup
+./setup.sh all --switch
 ```
 
 ---
 
-## ⚡ Usage
+## 🐧 Usage: Proot-Distro (Ubuntu/Debian)
 
-- Full setup (recommended):
-  ```bash
-  ./setup.sh all --switch
-  ```
-  Runs all setup steps and sets Zsh as default for your next login.
+For the best experience in a virtualized Linux environment, follow this two-step process:
 
-- Individual components:
-  ```bash
-  ./setup.sh storage   # Grant storage access
-  ./setup.sh base      # Install base packages
-  ./setup.sh tools     # Install utilities
-  ./setup.sh font      # Install Nerd Font
-  ./setup.sh zsh       # Configure Oh My Zsh
-  ./setup.sh starship  # Configure Starship prompt
-  ./setup.sh post      # Interactive post-setup tweaks
-  ./setup.sh git       # Configure Git and GitHub SSH
-  ```
+### Step 1: System Setup (Run as Root)
+First, log in as root to install core system tools (`sudo`, `zsh`, `git`, `curl`) and the global Starship binary.
 
-- Switch shell immediately (interactive only):
-  ```bash
-  ./setup.sh all --switch-now
-  ```
+```bash
+# Login to your distro (e.g., ubuntu)
+proot-distro login ubuntu
+
+# Run the script inside the container
+./proot-debian-setup.sh all
+```
+*Note: This ensures `sudo` is installed and permissions are correct.*
+
+### Step 2: User Configuration (Run as Regular User)
+If you use a regular user (e.g., `sms1sis`), log in as that user and run the script again. It will skip system installs and focus on your personal shell configuration.
+
+```bash
+# Login as your user
+proot-distro login ubuntu --user <your_username>
+
+# Run the script again
+./proot-debian-setup.sh all --switch
+```
+*This configures your specific `.zshrc`, `oh-my-zsh`, and SSH keys.*
 
 ---
 
-## ⚙️ Optional Steps
+## ⚡ Setup Commands
 
-- Customize Starship
-  - Run `./setup.sh post` for interactive tweaks.
-  - Edit manually at `~/.config/starship.toml`.
-  - More themes: [Starship Presets](https://starship.rs/presets/)
-
-- Check Logs
-  - All actions are logged to `termux_setup.log`
+| Command | Description |
+| :--- | :--- |
+| `./setup.sh all --switch` | Run full suite and switch shell on next login. |
+| `./setup.sh base` | Install base packages only. |
+| `./setup.sh tools` | Install developer utilities. |
+| `./setup.sh zsh` | Configure Zsh + Oh My Zsh + Plugins. |
+| `./setup.sh starship` | Configure Starship prompt & choose preset. |
+| `./setup.sh git` | Setup Git user & generate SSH keys. |
 
 ---
 
 ## 🛠️ Troubleshooting
 
-- If `chsh` is not available, the script falls back to adding `exec zsh` in `.bashrc`.
-- If SSH key generation fails, check permissions on `~/.ssh` and rerun `./setup.sh git`.
-- For Starship issues, run `starship doctor` to diagnose.
+- **Proot Path Issues:** If `which starship` points to `/data/data/...`, the script's path fix hasn't applied. Ensure your `.zshrc` starts with `export PATH=/usr/local/bin:...`.
+- **Permission Denied:** If setup fails in Proot, ensure you ran **Step 1** as root first to install `sudo`.
 
 ---
 
 ## 🙌 Credits
 
 - [Starship](https://github.com/starship/starship) — minimal, blazing‑fast, infinitely customizable prompt  
-- [Termux](https://github.com/termux/termux-app) — the Android terminal emulator that makes this possible  
-
----
-
-## 💡 This script is modular. Run only what you need, or all for the full experience.
+- [Termux](https://github.com/termux/termux-app) — the Android terminal emulator that makes this possible
