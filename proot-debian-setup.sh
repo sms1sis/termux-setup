@@ -124,12 +124,63 @@ zsh_setup() {
     backup_file "$HOME/.zshrc"
     info "Creating new .zshrc configuration..."
     cat << 'EOF' > "$HOME/.zshrc"
+# Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
+
+# Set ZSH_THEME to something minimal or leave default.
+# Starship will override the prompt, but OMZ needs a theme setting or defaults to robbyrussell.
+ZSH_THEME="robbyrussell"
+
+# Plugins
 plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
+
 source $ZSH/oh-my-zsh.sh
-alias ls="lsd"
+
+# --- Proot/Debian Specific Configuration ---
+
+# set variable identifying the chroot you work in (used in the prompt below)
+if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
+fi
+
+# Enable color support of ls and also add handy aliases
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+# --- User Customizations ---
+
+# Use lsd if available, otherwise fall back to ls --color
+if command -v lsd >/dev/null 2>&1; then
+    alias ls="lsd"
+    alias ll="lsd -l"
+    alias la="lsd -a"
+else
+    alias ls='ls --color=auto'
+    alias ll='ls -alF'
+    alias la='ls -A'
+fi
+
+# Load Cargo (Rust) environment if it exists
+if [ -f "$HOME/.cargo/env" ]; then
+    . "$HOME/.cargo/env"
+fi
+
+# Load user aliases
+if [ -f ~/.bash_aliases ]; then
+    . ~/.bash_aliases
+fi
+
+# Silence login message
 touch ~/.hushlogin
-eval "$(starship init zsh)"
+
+# Initialize Starship
+if command -v starship >/dev/null 2>&1; then
+    eval "$(starship init zsh)"
+fi
 
 # 🧠 Git quick upload helper for Zsh with colorful messages
 upload() {
