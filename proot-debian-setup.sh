@@ -447,6 +447,11 @@ switch_shell() {
 
 # --- Dispatcher ---
 main() {
+    # Check for root privileges
+    if [ "$(id -u)" -ne 0 ]; then
+        error_exit "This script must be run as root. Please run 'proot-distro login ubuntu' and try again."
+    fi
+
     main_banner
 
     # Ensure all components run if no argument is specified
