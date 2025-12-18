@@ -90,7 +90,8 @@ main_banner() {
 base_setup() {
     section "Base System Setup"
     execute "apt update -y && apt upgrade -y" "Updating and upgrading packages"
-    for p in git curl wget zsh starship; do install_pkg "$p"; done
+    for p in git curl wget zsh; do install_pkg "$p"; done
+    execute "curl -sS https://starship.rs/install.sh | sh -s -- -y" "Installing latest Starship via official script"
     log "Base setup complete."
 }
 
@@ -124,6 +125,9 @@ zsh_setup() {
     backup_file "$HOME/.zshrc"
     info "Creating new .zshrc configuration..."
     cat << 'EOF' > "$HOME/.zshrc"
+# Ensure Ubuntu native paths take priority over Termux host paths
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH
+
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
 
