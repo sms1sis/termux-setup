@@ -57,31 +57,23 @@ chmod +x setup.sh
 
 ## 🐧 Usage: Proot-Distro (Ubuntu/Debian)
 
-For the best experience in a virtualized Linux environment, follow this two-step process:
+The script is **Sudo-Aware**. If you are running as a regular user with sudo privileges, it will automatically handle system-level installations while keeping your personal configuration in your home directory.
 
-### Step 1: System Setup (Run as Root)
-First, log in as root to install core system tools (`sudo`, `zsh`, `git`, `curl`) and the global Starship binary.
-
-```bash
-# Login to your distro (e.g., ubuntu)
-proot-distro login ubuntu
-
-# Run the script inside the container
-./proot-debian-setup.sh all
-```
-*Note: This ensures `sudo` is installed and permissions are correct.*
-
-### Step 2: User Configuration (Run as Regular User)
-If you use a regular user (e.g., `sms1sis`), log in as that user and run the script again. It will skip system installs and focus on your personal shell configuration.
+### **Direct Setup (Recommended)**
+Log in as your preferred user and run the script. It will prompt for your sudo password when installing system tools.
 
 ```bash
-# Login as your user
+# Login as your user (e.g., sms1sis)
 proot-distro login ubuntu --user <your_username>
 
-# Run the script again
+# Run the setup script
 ./proot-debian-setup.sh all --switch
 ```
-*This configures your specific `.zshrc`, `oh-my-zsh`, and SSH keys.*
+
+### **Fallback: Root-First Setup**
+If `sudo` is not yet installed in your container or your user lacks permissions:
+1. Log in as **root** (`proot-distro login ubuntu`) and run `./proot-debian-setup.sh base` to install `sudo` and core tools.
+2. Log in as your **user** and run `./proot-debian-setup.sh all --switch` to finish your personal configuration.
 
 ---
 
