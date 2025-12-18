@@ -58,8 +58,8 @@ execute() {
 
 install_pkg() {
     local pkg=$1
-    # Use apt package manager
-    if ! command -v "$pkg" >/dev/null 2>&1; then
+    # Check if package is installed via dpkg (ignoring host PATH leakage)
+    if ! dpkg -s "$pkg" >/dev/null 2>&1; then
         execute "apt install -y $pkg" "Installing $pkg"
     else
         info "$pkg already installed, skipping."
