@@ -142,8 +142,9 @@ zsh_setup() {
     backup_file "$HOME/.zshrc"
     info "Creating new .zshrc configuration..."
     cat << 'EOF' > "$HOME/.zshrc"
-# Ensure Ubuntu native paths take priority over Termux host paths
-export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH
+    
+# Seal Proot: Set only Ubuntu paths and remove Termux host paths
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
