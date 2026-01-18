@@ -102,9 +102,51 @@ tools_setup() {
 font_setup() {
     section "Font Installation"
     mkdir -p "$HOME/.termux"
-    execute "curl -fLo $HOME/.termux/font.ttf https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/FiraCode/Regular/FiraCodeNerdFont-Regular.ttf" "Installing FiraCode Nerd Font"
+
+    # Define font options (Name|URL)
+    FONTS=(
+        "FiraCode|https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/FiraCode/Regular/FiraCodeNerdFont-Regular.ttf"
+        "JetBrainsMono|https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/JetBrainsMono/Ligatures/Regular/JetBrainsMonoNerdFont-Regular.ttf"
+        "Meslo|https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/Meslo/M/Regular/MesloLGSNerdFont-Regular.ttf"
+        "Hack|https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/Hack/Regular/HackNerdFont-Regular.ttf"
+        "SourceCodePro|https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/SourceCodePro/Regular/SauceCodeProNerdFont-Regular.ttf"
+        "UbuntuMono|https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/UbuntuMono/Regular/UbuntuMonoNerdFont-Regular.ttf"
+        "CascadiaCode|https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/CascadiaCode/Regular/CaskaydiaCoveNerdFont-Regular.ttf"
+        "Agave|https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/Agave/Regular/AgaveNerdFont-Regular.ttf"
+    )
+
+    DEFAULT_FONT="FiraCode"
+    
+    echo -e "${C_MAGENTA}${C_BOLD}🔡 Choose a Nerd Font${C_RESET}\n${C_CYAN}(press Enter for default: ${C_BOLD}$DEFAULT_FONT${C_RESET}${C_CYAN})${C_RESET}"
+    echo
+    for i in "${!FONTS[@]}"; do
+        name=$(echo "${FONTS[i]}" | cut -d'|' -f1)
+        idx=$((i+1))
+        echo -e "  ${C_YELLOW}$idx)${C_RESET} ${C_BLUE}$name${C_RESET}"
+    done
+    echo
+    echo -n -e "${C_CYAN}Selection ${C_RESET}> "
+    read -r choice
+    echo
+
+    SELECTED_URL=""
+    SELECTED_NAME=""
+
+    if [ -z "$choice" ]; then
+        SELECTED_NAME="$DEFAULT_FONT"
+        SELECTED_URL=$(echo "${FONTS[0]}" | cut -d'|' -f2)
+    elif [[ "$choice" =~ ^[0-9]+$ ]] && (( choice >= 1 && choice <= ${#FONTS[@]} )); then
+        SELECTED_NAME=$(echo "${FONTS[choice-1]}" | cut -d'|' -f1)
+        SELECTED_URL=$(echo "${FONTS[choice-1]}" | cut -d'|' -f2)
+    else
+        warn "Invalid selection, falling back to $DEFAULT_FONT"
+        SELECTED_NAME="$DEFAULT_FONT"
+        SELECTED_URL=$(echo "${FONTS[0]}" | cut -d'|' -f2)
+    fi
+
+    execute "curl -fLo $HOME/.termux/font.ttf $SELECTED_URL" "Installing $SELECTED_NAME Nerd Font"
     termux-reload-settings
-    log "Font installed and settings reloaded."
+    log "Font $SELECTED_NAME installed and settings reloaded."
 }
 
 zsh_setup() {
@@ -396,15 +438,64 @@ switch_shell() {
 }
 
 # --- Dispatcher ---
-main() {
-    main_banner
+run_all() {
+    storage_setup
+    base_setup
+    tools_setup
+    font_setup
+    zsh_setup
+    starship_setup
+    post_setup
+    git_setup
+}
 
+interactive_menu() {
+    while true; do
+        clear
+        main_banner
+        echo -e "${C_BOLD}${C_MAGENTA}  Main Menu${C_RESET}"
+        echo -e "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo -e "  ${C_YELLOW}1)${C_RESET} ${C_CYAN}Full Setup (Run Everything)${C_RESET}"
+        echo -e "  ${C_YELLOW}2)${C_RESET} ${C_CYAN}Storage Setup${C_RESET}"
+        echo -e "  ${C_YELLOW}3)${C_RESET} ${C_CYAN}Base System Setup (Update/Upgrade)${C_RESET}"
+        echo -e "  ${C_YELLOW}4)${C_RESET} ${C_CYAN}Install Development Tools (lsd, htop, etc.)${C_RESET}"
+        echo -e "  ${C_YELLOW}5)${C_RESET} ${C_CYAN}Install Nerd Fonts${C_RESET}"
+        echo -e "  ${C_YELLOW}6)${C_RESET} ${C_CYAN}Configure Zsh & Oh My Zsh${C_RESET}"
+        echo -e "  ${C_YELLOW}7)${C_RESET} ${C_CYAN}Configure Starship Prompt & Presets${C_RESET}"
+        echo -e "  ${C_YELLOW}8)${C_RESET} ${C_CYAN}Configure Git & SSH Keys${C_RESET}"
+        echo -e "  ${C_YELLOW}9)${C_RESET} ${C_GREEN}Switch Default Shell to Zsh${C_RESET}"
+        echo -e "  ${C_YELLOW}0)${C_RESET} ${C_RED}Exit${C_RESET}"
+        echo -e "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo
+        echo -n -e "  ${C_BOLD}${C_YELLOW}Select an option [0-9]: ${C_RESET}"
+        read -r menu_choice
+
+        case "$menu_choice" in
+            1) run_all ;;
+            2) storage_setup ;;
+            3) base_setup ;;
+            4) tools_setup ;;
+            5) font_setup ;;
+            6) zsh_setup ;;
+            7) starship_setup && post_setup ;;
+            8) git_setup ;;
+            9) switch_shell ;;
+            0) echo -e "\n${C_GREEN}Goodbye!${C_RESET}"; exit 0 ;;
+            *) warn "Invalid option, please try again."; sleep 1; continue ;;
+        esac
+
+        echo -e "\n${C_GREEN}Task completed. Press Enter to return to menu...${C_RESET}"
+        read -r
+    done
+}
+
+main() {
     if [ $# -eq 0 ]; then
-        info "No command specified. Running 'all' by default."
-        all
+        interactive_menu
         return
     fi
 
+    main_banner
     # Track whether we should run switch_shell at the end
     RUN_SWITCH=0
 
@@ -419,16 +510,7 @@ main() {
             starship) starship_setup ;;
             post) post_setup ;;
             git) git_setup ;;
-            all)
-                storage_setup
-                base_setup
-                tools_setup
-                font_setup
-                zsh_setup
-                starship_setup
-                post_setup
-                git_setup
-                ;;
+            all) run_all ;;
             --switch)
                 # Defer switch until after other requested work
                 RUN_SWITCH=1
@@ -438,6 +520,7 @@ main() {
                 ;;
             *)
                 echo "Usage: $0 {storage|base|tools|font|zsh|starship|git|post|all|--switch|--switch-now}"
+                echo "Or run without arguments for interactive menu."
                 return 1
                 ;;
         esac

@@ -16,8 +16,10 @@ The goal: Transform a fresh install into a powerful, visually appealing CLI work
 
 ## ✨ Features (Common)
 
+- **Interactive Menu:** Run without arguments to access a stylish selection menu.
 - **Enhanced UI:** Color-coded logs, progress spinners, and stylish banners.
 - **Shell & Prompt:** Installs **Zsh**, **Oh My Zsh**, and the **Starship** prompt.
+- **Font Selection:** Choose from multiple **Nerd Fonts** (FiraCode, JetBrainsMono, Meslo, etc.) to enable icon support.
 - **Plugins:** Auto-installs `zsh-autosuggestions` and `zsh-syntax-highlighting`.
 - **Git Integration:** Auto-configures global user/email, generates `ed25519` SSH keys, and tests GitHub connectivity. Includes a custom `upload` alias for quick commits.
 - **Config Management:** Automatically backs up existing files (`.zshrc`, `starship.toml`) before overwriting.
@@ -28,12 +30,15 @@ The goal: Transform a fresh install into a powerful, visually appealing CLI work
 
 ### 1. `setup.sh` (Native Termux)
 Designed for the host Termux environment.
+- **Interactive Menu:** Easily toggle specific setup tasks.
 - **Storage:** Requests Android storage access.
-- **Font:** Installs **FiraCode Nerd Font** for icon support.
+- **Font Selection:** Menu-driven installation of popular Nerd Fonts.
 - **Tools:** `lsd`, `htop`, `micro`, `openssh`, etc.
 
 ### 2. `proot-debian-setup.sh` (Ubuntu/Debian Proot)
 An advanced adapter for Linux distributions running via `proot-distro`.
+- **Interactive Menu:** Unified menu interface similar to the native script.
+- **Font Selection:** Cross-environment font installer that updates your Termux terminal settings from within PRoot.
 - **Sudo-Aware:** Automatically detects if running as **Root** or **User**. Uses `sudo` for system commands when needed.
 - **Conflict Resolution:** Configures `.zshrc` to prioritize native container paths (`/usr/bin`) over Termux host paths, fixing "binary bleeding" issues.
 - **Latest Starship:** Installs Starship via the official installer to `/usr/local/bin`, ensuring the latest version (avoiding stale apt packages).
@@ -49,8 +54,8 @@ git clone https://github.com/sms1sis/termux-setup.git
 cd termux-setup
 chmod +x setup.sh
 
-# Run full setup
-./setup.sh all --switch
+# Start the interactive setup
+./setup.sh
 ```
 
 ---
@@ -66,24 +71,28 @@ Log in as your preferred user and run the script. It will prompt for your sudo p
 # Login as your user (e.g., sms1sis)
 proot-distro login ubuntu --user <your_username>
 
-# Run the setup script
-./proot-debian-setup.sh all --switch
+# Run the interactive setup
+./proot-debian-setup.sh
 ```
 
 ### **Fallback: Root-First Setup**
 If `sudo` is not yet installed in your container or your user lacks permissions:
 1. Log in as **root** (`proot-distro login ubuntu`) and run `./proot-debian-setup.sh base` to install `sudo` and core tools.
-2. Log in as your **user** and run `./proot-debian-setup.sh all --switch` to finish your personal configuration.
+2. Log in as your **user** and run `./proot-debian-setup.sh` to finish your personal configuration.
 
 ---
 
 ## ⚡ Setup Commands
 
+The scripts can be run with arguments for automation or without arguments for the interactive menu.
+
 | Command | Description |
 | :--- | :--- |
+| `./setup.sh` | **Open the Interactive Menu (Recommended)** |
 | `./setup.sh all --switch` | Run full suite and switch shell on next login. |
 | `./setup.sh base` | Install base packages only. |
 | `./setup.sh tools` | Install developer utilities. |
+| `./setup.sh font` | Open Font selection menu. |
 | `./setup.sh zsh` | Configure Zsh + Oh My Zsh + Plugins. |
 | `./setup.sh starship` | Configure Starship prompt & choose preset. |
 | `./setup.sh post` | Customize Starship Configuration. |
