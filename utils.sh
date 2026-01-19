@@ -30,9 +30,9 @@ spinner() {
     local delay=0.1
     local spinstr='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
     while kill -0 "$pid" 2>/dev/null; do
-        local temp=${spinstr#?}
+        local temp="${spinstr#?}"
         printf " ${C_CYAN}%c${C_RESET}  " "$spinstr"
-        local spinstr=$temp${spinstr%???}
+        spinstr="${temp}${spinstr%"$temp"}"
         sleep $delay
         printf "\b\b\b\b\b\b"
     done
@@ -71,11 +71,16 @@ draw_box() {
     shift
     local lines=("$@")
     local longest=0
-    
+    local -a clean_lines
+
+    # Batch process ANSI stripping for all lines to avoid subshell overhead per line.
+    # We use printf "%b\n" to interpret escapes (like echo -e) before stripping.
+    if [ ${#lines[@]} -gt 0 ]; then
+        mapfile -t clean_lines < <(printf "%b\n" "${lines[@]}" | sed 's/\x1b\[[0-9;]*m//g')
+    fi
+
     # Calculate width
-    for line in "${lines[@]}"; do
-        # Strip ANSI codes for length calculation
-        clean_line=$(echo -e "$line" | sed 's/\x1b\[[0-9;]*m//g')
+    for clean_line in "${clean_lines[@]}"; do
         len=${#clean_line}
         if [ "$len" -gt "$longest" ]; then
             longest=$len
@@ -109,12 +114,13 @@ draw_box() {
     fi
 
     # Content
-    for line in "${lines[@]}"; do
-        clean_line=$(echo -e "$line" | sed 's/\x1b\[[0-9;]*m//g')
+    for i in "${!lines[@]}"; do
+        line="${lines[$i]}"
+        clean_line="${clean_lines[$i]}"
         len=${#clean_line}
         pad=$(( width - len - 2 )) # -2 for left padding
         printf "${C_BLUE}║${C_RESET} %b" "$line"
-        for ((i=0; i<pad; i++)); do printf " "; done
+        for ((j=0; j<pad; j++)); do printf " "; done
         printf " ${C_BLUE}║${C_RESET}\n"
     done
 
