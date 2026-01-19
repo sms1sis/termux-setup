@@ -661,12 +661,12 @@ switch_shell() {
 dev_setup() {
     section "Developer Stack Setup"
     echo -e "${C_YELLOW}Select stacks to install:${C_RESET}"
-    echo -e "1) Python (python, pip, uv)"
-    echo -e "2) Node.js (via fnm)"
-    echo -e "3) Rust (via pkg)"
-    echo -e "4) Neovim & Tmux"
-    echo -e "5) All of the above"
-    echo -e "0) Back"
+    echo -e "  ${C_YELLOW}1)${C_RESET} ${C_BLUE}Python (python, pip, uv)${C_RESET}"
+    echo -e "  ${C_YELLOW}2)${C_RESET} ${C_BLUE}Node.js (via fnm)${C_RESET}"
+    echo -e "  ${C_YELLOW}3)${C_RESET} ${C_BLUE}Rust (via pkg)${C_RESET}"
+    echo -e "  ${C_YELLOW}4)${C_RESET} ${C_BLUE}Neovim & Tmux${C_RESET}"
+    echo -e "  ${C_YELLOW}5)${C_RESET} ${C_MAGENTA}All of the above${C_RESET}"
+    echo -e "  ${C_YELLOW}0)${C_RESET} ${C_RED}Back${C_RESET}"
     echo -n -e "${C_CYAN}Choice > ${C_RESET}"
     read -r choice
     
