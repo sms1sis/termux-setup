@@ -31,10 +31,10 @@ spinner() {
     local spinstr='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
     while kill -0 "$pid" 2>/dev/null; do
         local temp="${spinstr#?}"
-        printf " ${C_CYAN}%c${C_RESET}  " "$spinstr"
+        printf " ${C_CYAN}%s${C_RESET}  " "${spinstr:0:1}"
         spinstr="${temp}${spinstr%"$temp"}"
         sleep $delay
-        printf "\b\b\b\b\b\b"
+        printf "\b\b\b\b"
     done
     printf "    \b\b\b\b"
 }
