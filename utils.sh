@@ -40,12 +40,28 @@ spinner() {
 }
 
 typewriter() {
-    local text="$1"
+    local text="$(echo -e "$1")"
     local delay=${2:-0.03}
     local n=${#text}
-    for (( i=0; i<n; i++ )); do
-        printf "${text:$i:1}"
-        sleep "$delay"
+    local i=0
+    while [ $i -lt $n ]; do
+        local char="${text:$i:1}"
+        if [[ "$char" == $'\e' ]]; then
+            printf "%s" "$char"
+            i=$((i+1))
+            while [ $i -lt $n ]; do
+                local next_char="${text:$i:1}"
+                printf "%s" "$next_char"
+                i=$((i+1))
+                if [[ "$next_char" =~ [a-zA-Z] ]]; then
+                    break
+                fi
+            done
+        else
+            printf "%s" "$char"
+            sleep "$delay"
+            i=$((i+1))
+        fi
     done
     echo ""
 }
