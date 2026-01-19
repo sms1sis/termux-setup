@@ -21,7 +21,7 @@ The goal: Transform a fresh install into a powerful, visually appealing CLI work
 - **Modular Architecture:** Core logic separated into `utils.sh` for stability and easy maintenance.
 - **Self-Update:** Built-in ability to check for and pull the latest script updates from GitHub.
 - **Shell & Prompt:** Installs **Zsh**, **Oh My Zsh**, and the **Starship** prompt.
-- **Font Selection:** Choose from multiple **Nerd Fonts** (FiraCode, JetBrainsMono, Meslo, etc.) to enable icon support.
+- **Font Selection:** Choose from multiple **Nerd Fonts** (FiraCode, JetBrainsMono, Meslo, Iosevka, etc.) to enable icon support.
 - **Terminal Themes:** Apply color schemes like Dracula, One Dark, Gruvbox, etc.
 - **Termux API:** Seamless integration with Android API (Battery, SMS, Clipboard).
 - **Desktop Environment:** One-click setup for XFCE4 + TigerVNC (GUI).
