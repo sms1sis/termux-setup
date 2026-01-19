@@ -5,6 +5,9 @@
 set -uo pipefail
 LOGFILE="$HOME/debian_setup.log"
 
+# Seal Proot: Set only Ubuntu paths and remove Termux host paths
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
 # --- Privilege Handling ---
 SUDO=""
 if [ "$(id -u)" -ne 0 ]; then
@@ -58,7 +61,7 @@ base_setup() {
     local apt_opts='-o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confnew"'
     execute "apt update -y && DEBIAN_FRONTEND=noninteractive apt upgrade -y $apt_opts" "Updating and upgrading packages"
     for p in sudo git curl wget zsh; do install_pkg "$p"; done
-    if command -v starship >/dev/null 2>&1; then
+    if [ -f "/usr/local/bin/starship" ] || [ -f "/usr/bin/starship" ]; then
         info "Starship already installed."
     else
         execute "curl -sS https://starship.rs/install.sh | sh -s -- -y" "Installing latest Starship via official script"
@@ -436,7 +439,7 @@ fi
 # --- User Customizations ---
 
 # Use lsd if available, otherwise fall back to ls --color
-if command -v lsd >/dev/null 2>&1; then
+if [ -f "/usr/bin/lsd" ] || [ -f "/usr/local/bin/lsd" ]; then
     alias ls="lsd"
     alias ll="lsd -l"
     alias la="lsd -a"
@@ -460,7 +463,7 @@ fi
 touch ~/.hushlogin
 
 # Initialize Starship
-if command -v starship >/dev/null 2>&1; then
+if [ -f "/usr/local/bin/starship" ] || [ -f "/usr/bin/starship" ]; then
     eval "$(starship init zsh)"
 fi
 
@@ -572,7 +575,7 @@ starship_setup() {
 
     info "Selected preset: ${C_BOLD}$CHOSEN${C_RESET}"
 
-    if command -v starship >/dev/null 2>&1 && starship preset "$CHOSEN" -o "$HOME/.config/starship.toml"; then
+    if ([ -f "/usr/local/bin/starship" ] || [ -f "/usr/bin/starship" ]) && starship preset "$CHOSEN" -o "$HOME/.config/starship.toml"; then
         log "Starship configured with ${C_BOLD}$CHOSEN${C_RESET} ${C_GREEN}✔${C_RESET}"
     else
         warn "Starship command not found or failed to apply preset $CHOSEN. Ensure Starship is installed."
