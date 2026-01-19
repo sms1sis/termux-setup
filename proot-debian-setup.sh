@@ -54,7 +54,9 @@ EOF
 
 base_setup() {
     section "Base System Setup"
-    execute "apt update -y && apt upgrade -y" "Updating and upgrading packages"
+    # Auto-answer configuration prompts (Use new configs if conflict)
+    local apt_opts='-o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confnew"'
+    execute "apt update -y && DEBIAN_FRONTEND=noninteractive apt upgrade -y $apt_opts" "Updating and upgrading packages"
     for p in sudo git curl wget zsh; do install_pkg "$p"; done
     if command -v starship >/dev/null 2>&1; then
         info "Starship already installed."

@@ -48,13 +48,9 @@ storage_setup() {
 
 base_setup() {
     section "Base System Setup"
-    info "Updating and upgrading packages..."
-    # Run directly to allow interactive prompts
-    if pkg update -y && pkg upgrade -y; then
-        log "Updating and upgrading packages - Done"
-    else
-        error_exit "Updating and upgrading packages - Failed"
-    fi
+    # Auto-answer configuration prompts (Use new configs if conflict)
+    local apt_opts='-o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confnew"'
+    execute "DEBIAN_FRONTEND=noninteractive pkg update -y && DEBIAN_FRONTEND=noninteractive pkg upgrade -y $apt_opts" "Updating and upgrading packages"
     for p in git curl wget zsh starship; do install_pkg "$p"; done
     log "Base setup complete."
 }
