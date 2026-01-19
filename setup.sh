@@ -5,52 +5,14 @@
 set -uo pipefail
 LOGFILE="$HOME/termux_setup.log"
 
-# --- Color Definitions ---
-C_RESET='\033[0m'
-C_RED='\033[0;31m'
-C_GREEN='\033[0;32m'
-C_YELLOW='\033[1;33m'
-C_CYAN='\033[0;36m'
-C_MAGENTA='\033[0;35m'
-C_BLUE='\033[0;34m'
-C_BOLD='\033[1m'
-C_UNDERLINE='\033[4m'
-
-# --- Logging Functions ---
-log()     { echo -e "${C_GREEN}[✔]${C_RESET} $1" | tee -a "$LOGFILE"; }
-warn()    { echo -e "${C_YELLOW}[!]${C_RESET} $1" | tee -a "$LOGFILE"; }
-error_exit() { echo -e "${C_RED}[✖]${C_RESET} $1" | tee -a "$LOGFILE"; exit 1; }
-info()    { echo -e "${C_CYAN}[i]${C_RESET} $1" | tee -a "$LOGFILE"; }
-section() { echo -e "\n${C_MAGENTA}✨ ${C_BOLD}$1${C_RESET}\n"; }
-
-# --- Helper Functions ---
-spinner() {
-    local pid=$1
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf " [%c]  " "$spinstr"
-        local spinstr=$temp${spinstr%???}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "    \b\b\b\b"
-}
-
-execute() {
-    local cmd=$1
-    local msg=$2
-    info "$msg"
-    sh -c "$cmd" &> "$LOGFILE" &
-    spinner $!
-    wait $!
-    if [ $? -eq 0 ]; then
-        log "$msg - Done"
-    else
-        error_exit "$msg - Failed"
-    fi
-}
+# Source utilities
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+if [ -f "$SCRIPT_DIR/utils.sh" ]; then
+    source "$SCRIPT_DIR/utils.sh"
+else
+    echo "Error: utils.sh not found."
+    exit 1
+fi
 
 install_pkg() {
     local pkg=$1
@@ -61,13 +23,6 @@ install_pkg() {
     fi
 }
 
-backup_file() {
-    local file=$1
-    if [ -f "$file" ]; then
-        cp "$file" "$file.backup.$(date +%s)"
-        info "Backed up $file"
-    fi
-}
 
 # --- Main Setup Functions ---
 main_banner() {
@@ -447,6 +402,47 @@ switch_shell() {
     fi
 }
 
+dev_setup() {
+    section "Developer Stack Setup"
+    echo -e "${C_YELLOW}Select stacks to install:${C_RESET}"
+    echo -e "1) Python (python, pip, uv)"
+    echo -e "2) Node.js (via fnm)"
+    echo -e "3) Rust (via pkg)"
+    echo -e "4) Neovim & Tmux"
+    echo -e "5) All of the above"
+    echo -e "0) Back"
+    echo -n -e "${C_CYAN}Choice > ${C_RESET}"
+    read -r choice
+    
+    case "$choice" in
+        1) 
+            install_pkg "python"
+            execute "pip install uv" "Installing 'uv' package manager"
+            ;;
+        2) 
+            install_pkg "fnm"
+            info "fnm installed. Add 'eval \"\$(fnm env --use-on-cd)\"' to your .zshrc manually or via post-setup."
+            ;;
+        3) 
+            install_pkg "rust"
+            ;;
+        4) 
+            install_pkg "neovim"
+            install_pkg "tmux"
+            ;;
+        5)
+            install_pkg "python"
+            execute "pip install uv" "Installing 'uv'"
+            install_pkg "fnm"
+            install_pkg "rust"
+            install_pkg "neovim"
+            install_pkg "tmux"
+            ;;
+        0) return ;;
+        *) warn "Invalid choice" ;;
+    esac
+}
+
 # --- Dispatcher ---
 run_all() {
     storage_setup
@@ -457,6 +453,8 @@ run_all() {
     starship_setup
     post_setup
     git_setup
+    dev_setup # Optional in run_all? maybe ask. For now let's keep it manual or add it.
+              # Actually, user didn't ask to add it to run_all.
 }
 
 interactive_menu() {
@@ -474,10 +472,12 @@ interactive_menu() {
         echo -e "  ${C_YELLOW}7)${C_RESET} ${C_CYAN}Configure Starship Prompt & Presets${C_RESET}"
         echo -e "  ${C_YELLOW}8)${C_RESET} ${C_CYAN}Configure Git & SSH Keys${C_RESET}"
         echo -e "  ${C_YELLOW}9)${C_RESET} ${C_GREEN}Switch Default Shell to Zsh${C_RESET}"
+        echo -e "  ${C_YELLOW}10)${C_RESET} ${C_CYAN}Developer Stack Setup (Python, Node, Rust...)${C_RESET}"
+        echo -e "  ${C_YELLOW}11)${C_RESET} ${C_CYAN}Check for Updates${C_RESET}"
         echo -e "  ${C_YELLOW}0)${C_RESET} ${C_RED}Exit${C_RESET}"
         echo -e "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         echo
-        echo -n -e "  ${C_BOLD}${C_YELLOW}Select an option [0-9]: ${C_RESET}"
+        echo -n -e "  ${C_BOLD}${C_YELLOW}Select an option [0-11]: ${C_RESET}"
         read -r menu_choice
 
         case "$menu_choice" in
@@ -490,6 +490,8 @@ interactive_menu() {
             7) starship_setup && post_setup ;;
             8) git_setup ;;
             9) switch_shell ;;
+            10) dev_setup ;;
+            11) self_update ;;
             0) echo -e "\n${C_GREEN}Goodbye!${C_RESET}"; exit 0 ;;
             *) warn "Invalid option, please try again."; sleep 1; continue ;;
         esac

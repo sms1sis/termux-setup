@@ -5,69 +5,25 @@
 set -uo pipefail
 LOGFILE="$HOME/debian_setup.log"
 
-# --- Color Definitions ---
-C_RESET='\033[0m'
-C_RED='\033[0;31m'
-C_GREEN='\033[0;32m'
-C_YELLOW='\033[1;33m'
-C_CYAN='\033[0;36m'
-C_MAGENTA='\033[0;35m'
-C_BLUE='\033[0;34m'
-C_BOLD='\033[1m'
-C_UNDERLINE='\033[4m'
-
 # --- Privilege Handling ---
 SUDO=""
 if [ "$(id -u)" -ne 0 ]; then
     if command -v sudo >/dev/null 2>&1; then
         SUDO="sudo"
     else
-        warn "Running as non-root and 'sudo' is not installed."
-        info "Please run this script as root first (proot-distro login ubuntu) to install sudo."
+        echo "Warning: Running as non-root and 'sudo' is not installed."
+        echo "Please run this script as root first to install sudo."
     fi
 fi
 
-# --- Logging Functions ---
-log()     { echo -e "${C_GREEN}[✔]${C_RESET} $1" | tee -a "$LOGFILE"; }
-warn()    { echo -e "${C_YELLOW}[!]${C_RESET} $1" | tee -a "$LOGFILE"; }
-error_exit() { echo -e "${C_RED}[✖]${C_RESET} $1" | tee -a "$LOGFILE"; exit 1; }
-info()    { echo -e "${C_CYAN}[i]${C_RESET} $1" | tee -a "$LOGFILE"; }
-section() { echo -e "\n${C_MAGENTA}✨ ${C_BOLD}$1${C_RESET}\n"; }
-
-# --- Helper Functions ---
-spinner() {
-    local pid=$1
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf " [%c]  " "$spinstr"
-        local spinstr=$temp${spinstr%???}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
-    done
-    printf "    \b\b\b\b"
-}
-
-execute() {
-    local cmd=$1
-    local msg=$2
-    info "$msg"
-    # Ensure non-interactive mode for apt commands and apply sudo
-    if [[ "$cmd" == *"apt install"* || "$cmd" == *"apt update"* || "$cmd" == *"apt upgrade"* ]]; then
-        cmd="DEBIAN_FRONTEND=noninteractive $SUDO $cmd"
-    else
-        cmd="$SUDO $cmd"
-    fi
-    sh -c "$cmd" &> "$LOGFILE" &
-    spinner $!
-    wait $!
-    if [ $? -eq 0 ]; then
-        log "$msg - Done"
-    else
-        error_exit "$msg - Failed (Check $LOGFILE for details)"
-    fi
-}
+# Source utilities
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+if [ -f "$SCRIPT_DIR/utils.sh" ]; then
+    source "$SCRIPT_DIR/utils.sh"
+else
+    echo "Error: utils.sh not found."
+    exit 1
+fi
 
 install_pkg() {
     local pkg=$1
@@ -79,13 +35,6 @@ install_pkg() {
     fi
 }
 
-backup_file() {
-    local file=$1
-    if [ -f "$file" ]; then
-        cp "$file" "$file.backup.$(date +%s)"
-        info "Backed up $file"
-    fi
-}
 
 # --- Main Setup Functions ---
 main_banner() {
@@ -543,6 +492,62 @@ switch_shell() {
     fi
 }
 
+dev_setup() {
+    section "Developer Stack Setup (Debian)"
+    echo -e "${C_YELLOW}Select stacks to install:${C_RESET}"
+    echo -e "1) Python (python3, pip, venv, uv)"
+    echo -e "2) Node.js (via fnm)"
+    echo -e "3) Rust (via rustup)"
+    echo -e "4) Neovim & Tmux"
+    echo -e "5) All of the above"
+    echo -e "0) Back"
+    echo -n -e "${C_CYAN}Choice > ${C_RESET}"
+    read -r choice
+    
+    case "$choice" in
+        1) 
+            install_pkg "python3"
+            install_pkg "python3-pip"
+            install_pkg "python3-venv"
+            # Install uv via curl or pip. Pip is safer in proot if curl fails ssl? 
+            # But we have pip.
+            execute "pip3 install uv --break-system-packages" "Installing 'uv' (pip)" || execute "pip3 install uv" "Installing 'uv' (fallback)"
+            ;;
+        2) 
+            info "Installing fnm..."
+            execute "curl -fsSL https://fnm.vercel.app/install | bash" "Installing fnm"
+            info "fnm installed. Please restart shell or source ~/.bashrc / ~/.zshrc."
+            ;;
+        3) 
+            info "Installing Rust (rustup)..."
+            execute "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y" "Installing rustup"
+            ;;
+        4) 
+            install_pkg "neovim"
+            install_pkg "tmux"
+            ;;
+        5)
+            # Python
+            install_pkg "python3"
+            install_pkg "python3-pip"
+            install_pkg "python3-venv"
+            execute "pip3 install uv --break-system-packages" "Installing 'uv'" || execute "pip3 install uv" "Installing 'uv'"
+            
+            # Node
+            execute "curl -fsSL https://fnm.vercel.app/install | bash" "Installing fnm"
+            
+            # Rust
+            execute "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y" "Installing rustup"
+            
+            # Tools
+            install_pkg "neovim"
+            install_pkg "tmux"
+            ;;
+        0) return ;;
+        *) warn "Invalid choice" ;;
+    esac
+}
+
 # --- Dispatcher ---
 run_all() {
     base_setup
@@ -568,10 +573,12 @@ interactive_menu() {
         echo -e "  ${C_YELLOW}6)${C_RESET} ${C_CYAN}Configure Starship Prompt & Presets${C_RESET}"
         echo -e "  ${C_YELLOW}7)${C_RESET} ${C_CYAN}Configure Git & SSH Keys${C_RESET}"
         echo -e "  ${C_YELLOW}8)${C_RESET} ${C_GREEN}Switch Default Shell to Zsh${C_RESET}"
+        echo -e "  ${C_YELLOW}9)${C_RESET} ${C_CYAN}Developer Stack Setup (Python, Node, Rust...)${C_RESET}"
+        echo -e "  ${C_YELLOW}10)${C_RESET} ${C_CYAN}Check for Updates${C_RESET}"
         echo -e "  ${C_YELLOW}0)${C_RESET} ${C_RED}Exit${C_RESET}"
         echo -e "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         echo
-        echo -n -e "  ${C_BOLD}${C_YELLOW}Select an option [0-8]: ${C_RESET}"
+        echo -n -e "  ${C_BOLD}${C_YELLOW}Select an option [0-10]: ${C_RESET}"
         read -r menu_choice
 
         case "$menu_choice" in
@@ -583,6 +590,8 @@ interactive_menu() {
             6) starship_setup && post_setup ;;
             7) git_setup ;;
             8) switch_shell ;;
+            9) dev_setup ;;
+            10) self_update ;;
             0) echo -e "\n${C_GREEN}Goodbye!${C_RESET}"; exit 0 ;;
             *) warn "Invalid option, please try again."; sleep 1; continue ;;
         esac
