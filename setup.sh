@@ -48,7 +48,13 @@ storage_setup() {
 
 base_setup() {
     section "Base System Setup"
-    execute "pkg update -y && pkg upgrade -y" "Updating and upgrading packages"
+    info "Updating and upgrading packages..."
+    # Run directly to allow interactive prompts
+    if pkg update -y && pkg upgrade -y; then
+        log "Updating and upgrading packages - Done"
+    else
+        error_exit "Updating and upgrading packages - Failed"
+    fi
     for p in git curl wget zsh starship; do install_pkg "$p"; done
     log "Base setup complete."
 }
