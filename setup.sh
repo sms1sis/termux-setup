@@ -454,7 +454,7 @@ starship_setup() {
     section "Starship Prompt Configuration"
     mkdir -p "$HOME/.config"
 
-    PRESETS=("catppuccin-powerline" "gruvbox-rainbow" "tokyo-night" "pastel-powerline")
+    PRESETS=("catppuccin-powerline" "gruvbox-rainbow" "tokyo-night" "pastel-powerline" "nerd-font-symbols" "bracketed-segments" "pure-preset" "jetpack")
     DEFAULT="catppuccin-powerline"
 
     echo
