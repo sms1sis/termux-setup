@@ -119,6 +119,7 @@ font_setup() {
     
     echo -e "${C_MAGENTA}${C_BOLD}🔡 Choose a Nerd Font${C_RESET}\n${C_CYAN}(press Enter for default: ${C_BOLD}$DEFAULT_FONT${C_RESET}${C_CYAN})${C_RESET}"
     echo
+    echo -e "  ${C_YELLOW}0)${C_RESET} ${C_RED}Back to Main Menu${C_RESET}"
     for i in "${!FONTS[@]}"; do
         name=$(echo "${FONTS[i]}" | cut -d'|' -f1)
         idx=$((i+1))
@@ -128,6 +129,10 @@ font_setup() {
     echo -n -e "${C_CYAN}Selection ${C_RESET}> "
     read -r choice
     echo
+
+    if [ "$choice" == "0" ]; then
+        return 0
+    fi
 
     SELECTED_URL=""
     SELECTED_NAME=""
@@ -242,6 +247,7 @@ starship_setup() {
     echo
     echo -e "${C_MAGENTA}${C_BOLD}🎨 Choose a Starship preset${C_RESET}\n${C_CYAN}(press Enter for default: ${C_BOLD}$DEFAULT${C_RESET}${C_CYAN})${C_RESET}"
     echo
+    echo -e "  ${C_YELLOW}0)${C_RESET} ${C_RED}Back to Main Menu${C_RESET}"
     for i in "${!PRESETS[@]}"; do
         idx=$((i+1))
         echo -e "  ${C_YELLOW}$idx)${C_RESET} ${C_BLUE}${PRESETS[i]}${C_RESET}"
@@ -250,6 +256,10 @@ starship_setup() {
     echo -n -e "${C_CYAN}Selection ${C_RESET}> "
     read -r choice
     echo
+
+    if [ "$choice" == "0" ]; then
+        return 0
+    fi
 
     if [ -z "$choice" ]; then
         CHOSEN="$DEFAULT"
