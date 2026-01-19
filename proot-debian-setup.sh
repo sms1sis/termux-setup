@@ -32,7 +32,7 @@ install_pkg() {
     local pkg=$1
     # Check if package is installed via dpkg (ignoring host PATH leakage)
     if ! dpkg -s "$pkg" >/dev/null 2>&1; then
-        execute "apt install -y $pkg" "Installing $pkg"
+        execute "apt-get install -y $pkg" "Installing $pkg"
     else
         info "$pkg already installed, skipping."
     fi
@@ -59,7 +59,7 @@ base_setup() {
     section "Base System Setup"
     # Auto-answer configuration prompts (Use new configs if conflict)
     local apt_opts='-o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confnew"'
-    execute "apt update -y && DEBIAN_FRONTEND=noninteractive apt upgrade -y $apt_opts" "Updating and upgrading packages"
+    execute "apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y $apt_opts" "Updating and upgrading packages"
     for p in sudo git curl wget zsh procps; do install_pkg "$p"; done
     if [ -f "/usr/local/bin/starship" ] || [ -f "/usr/bin/starship" ]; then
         info "Starship already installed."
@@ -221,7 +221,7 @@ color15=#fdf6e3"
 
 gui_setup() {
     section "Desktop Environment (XFCE + VNC) Setup"
-    execute "apt install -y xfce4 xfce4-goodies tigervnc-standalone-server" "Installing XFCE4 and TigerVNC"
+    execute "apt-get install -y xfce4 xfce4-goodies tigervnc-standalone-server" "Installing XFCE4 and TigerVNC"
 
     # VNC Start Script
     cat << 'EOF' > "/usr/local/bin/vnc-start"
@@ -694,7 +694,7 @@ git_setup() {
         mkdir -p "$HOME/.ssh"
         chmod 700 "$HOME/.ssh"
         # Ensure ssh-keygen is installed
-        apt install -y openssh-client
+        apt-get install -y openssh-client
         ssh-keygen -t ed25519 -C "$(git config --global user.email)" -f "$SSH_KEY_PATH" -N "" || error_exit "SSH Keygen failed."
     else
         info "${C_GREEN}Existing ed25519 SSH key found.${C_RESET}"
