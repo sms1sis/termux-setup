@@ -661,34 +661,39 @@ switch_shell() {
 }
 
 dev_setup() {
-    section "Developer Stack Setup"
-    echo -e "${C_YELLOW}Select stacks to install:${C_RESET}"
-    echo -e "  ${C_YELLOW}1)${C_RESET} ${C_BLUE}Python (python, pip, uv)${C_RESET}"
-    echo -e "  ${C_YELLOW}2)${C_RESET} ${C_BLUE}Node.js (via fnm)${C_RESET}"
-    echo -e "  ${C_YELLOW}3)${C_RESET} ${C_BLUE}Rust (via pkg)${C_RESET}"
-    echo -e "  ${C_YELLOW}4)${C_RESET} ${C_BLUE}Neovim & Tmux${C_RESET}"
-    echo -e "  ${C_YELLOW}5)${C_RESET} ${C_MAGENTA}All of the above${C_RESET}"
+    section "Software & Development Setup"
+    echo -e "${C_YELLOW}Select software to install:${C_RESET}"
+    echo -e "  ${C_YELLOW}1)${C_RESET} ${C_BLUE}Basic Utilities (lsd, htop, micro, etc.)${C_RESET}"
+    echo -e "  ${C_YELLOW}2)${C_RESET} ${C_BLUE}Python (python, pip, uv)${C_RESET}"
+    echo -e "  ${C_YELLOW}3)${C_RESET} ${C_BLUE}Node.js (via fnm)${C_RESET}"
+    echo -e "  ${C_YELLOW}4)${C_RESET} ${C_BLUE}Rust (via pkg)${C_RESET}"
+    echo -e "  ${C_YELLOW}5)${C_RESET} ${C_BLUE}Neovim & Tmux${C_RESET}"
+    echo -e "  ${C_YELLOW}6)${C_RESET} ${C_MAGENTA}All of the above${C_RESET}"
     echo -e "  ${C_YELLOW}0)${C_RESET} ${C_RED}Back${C_RESET}"
     echo -n -e "${C_CYAN}Choice > ${C_RESET}"
     read -r choice
     
     case "$choice" in
-        1) 
+        1)
+            tools_setup
+            ;;
+        2) 
             install_pkg "python"
             execute "pip install uv" "Installing 'uv' package manager"
             ;;
-        2) 
+        3) 
             install_pkg "fnm"
             info "fnm installed. Add 'eval \"\$(fnm env --use-on-cd)\"' to your .zshrc manually or via post-setup."
             ;;
-        3) 
+        4) 
             install_pkg "rust"
             ;;
-        4) 
+        5) 
             install_pkg "neovim"
             install_pkg "tmux"
             ;;
-        5)
+        6)
+            tools_setup
             install_pkg "python"
             execute "pip install uv" "Installing 'uv'"
             install_pkg "fnm"
@@ -711,8 +716,7 @@ run_all() {
     starship_setup
     post_setup
     git_setup
-    dev_setup # Optional in run_all? maybe ask. For now let's keep it manual or add it.
-              # Actually, user didn't ask to add it to run_all.
+    # dev_setup is manual
 }
 
 interactive_menu() {
@@ -731,7 +735,7 @@ interactive_menu() {
             "${C_YELLOW}1)${C_RESET} ${C_CYAN}Full Setup (Run Everything)${C_RESET}"
             "${C_YELLOW}2)${C_RESET} ${C_CYAN}Storage Setup${C_RESET}"
             "${C_YELLOW}3)${C_RESET} ${C_CYAN}Base System Setup (Update/Upgrade)${C_RESET}"
-            "${C_YELLOW}4)${C_RESET} ${C_CYAN}Install Development Tools${C_RESET}"
+            "${C_YELLOW}4)${C_RESET} ${C_CYAN}Software & Development Setup${C_RESET}"
             "${C_YELLOW}5)${C_RESET} ${C_CYAN}Configure Terminal Theme${C_RESET}"
             "${C_YELLOW}6)${C_RESET} ${C_CYAN}Install Termux API & Aliases${C_RESET}"
             "${C_YELLOW}7)${C_RESET} ${C_CYAN}Setup GUI (XFCE + VNC)${C_RESET}"
@@ -742,8 +746,7 @@ interactive_menu() {
             "${C_YELLOW}12)${C_RESET} ${C_CYAN}Configure Starship Prompt${C_RESET}"
             "${C_YELLOW}13)${C_RESET} ${C_CYAN}Configure Git & SSH Keys${C_RESET}"
             "${C_YELLOW}14)${C_RESET} ${C_GREEN}Switch Default Shell to Zsh${C_RESET}"
-            "${C_YELLOW}15)${C_RESET} ${C_CYAN}Developer Stack Setup${C_RESET}"
-            "${C_YELLOW}16)${C_RESET} ${C_CYAN}Check for Updates${C_RESET}"
+            "${C_YELLOW}15)${C_RESET} ${C_CYAN}Check for Updates${C_RESET}"
             " "
             "${C_YELLOW}0)${C_RESET} ${C_RED}Exit${C_RESET}"
         )
@@ -751,14 +754,14 @@ interactive_menu() {
         draw_box "Main Menu" "${MENU_ITEMS[@]}"
         
         echo
-        echo -n -e "  ${C_BOLD}${C_YELLOW}Select an option [0-16]: ${C_RESET}"
+        echo -n -e "  ${C_BOLD}${C_YELLOW}Select an option [0-15]: ${C_RESET}"
         read -r menu_choice
 
         case "$menu_choice" in
             1) run_all ;;
             2) storage_setup ;;
             3) base_setup ;;
-            4) tools_setup ;;
+            4) dev_setup ;;
             5) theme_setup ;;
             6) api_setup ;;
             7) gui_setup ;;
@@ -769,8 +772,7 @@ interactive_menu() {
             12) starship_setup && post_setup ;;
             13) git_setup ;;
             14) switch_shell ;;
-            15) dev_setup ;;
-            16) self_update ;;
+            15) self_update ;;
             0) echo -e "\n${C_GREEN}Goodbye!${C_RESET}"; exit 0 ;;
             *) warn "Invalid option, please try again."; sleep 1; continue ;;
         esac

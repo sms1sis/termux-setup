@@ -733,19 +733,23 @@ switch_shell() {
 }
 
 dev_setup() {
-    section "Developer Stack Setup (Debian)"
-    echo -e "${C_YELLOW}Select stacks to install:${C_RESET}"
-    echo -e "  ${C_YELLOW}1)${C_RESET} ${C_BLUE}Python (python3, pip, venv, uv)${C_RESET}"
-    echo -e "  ${C_YELLOW}2)${C_RESET} ${C_BLUE}Node.js (via fnm)${C_RESET}"
-    echo -e "  ${C_YELLOW}3)${C_RESET} ${C_BLUE}Rust (via rustup)${C_RESET}"
-    echo -e "  ${C_YELLOW}4)${C_RESET} ${C_BLUE}Neovim & Tmux${C_RESET}"
-    echo -e "  ${C_YELLOW}5)${C_RESET} ${C_MAGENTA}All of the above${C_RESET}"
+    section "Software & Development Setup (Debian)"
+    echo -e "${C_YELLOW}Select software to install:${C_RESET}"
+    echo -e "  ${C_YELLOW}1)${C_RESET} ${C_BLUE}Basic Utilities (lsd, htop, micro, etc.)${C_RESET}"
+    echo -e "  ${C_YELLOW}2)${C_RESET} ${C_BLUE}Python (python3, pip, venv, uv)${C_RESET}"
+    echo -e "  ${C_YELLOW}3)${C_RESET} ${C_BLUE}Node.js (via fnm)${C_RESET}"
+    echo -e "  ${C_YELLOW}4)${C_RESET} ${C_BLUE}Rust (via rustup)${C_RESET}"
+    echo -e "  ${C_YELLOW}5)${C_RESET} ${C_BLUE}Neovim & Tmux${C_RESET}"
+    echo -e "  ${C_YELLOW}6)${C_RESET} ${C_MAGENTA}All of the above${C_RESET}"
     echo -e "  ${C_YELLOW}0)${C_RESET} ${C_RED}Back${C_RESET}"
     echo -n -e "${C_CYAN}Choice > ${C_RESET}"
     read -r choice
     
     case "$choice" in
-        1) 
+        1)
+            tools_setup
+            ;;
+        2) 
             install_pkg "python3"
             install_pkg "python3-pip"
             install_pkg "python3-venv"
@@ -753,20 +757,21 @@ dev_setup() {
             # But we have pip.
             execute "pip3 install uv --break-system-packages" "Installing 'uv' (pip)" || execute "pip3 install uv" "Installing 'uv' (fallback)"
             ;;
-        2) 
+        3) 
             info "Installing fnm..."
             execute "curl -fsSL https://fnm.vercel.app/install | bash" "Installing fnm"
             info "fnm installed. Please restart shell or source ~/.bashrc / ~/.zshrc."
             ;;
-        3) 
+        4) 
             info "Installing Rust (rustup)..."
             execute "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y" "Installing rustup"
             ;;
-        4) 
+        5) 
             install_pkg "neovim"
             install_pkg "tmux"
             ;;
-        5)
+        6)
+            tools_setup
             # Python
             install_pkg "python3"
             install_pkg "python3-pip"
@@ -813,7 +818,7 @@ interactive_menu() {
         MENU_ITEMS=(
             "${C_YELLOW}1)${C_RESET} ${C_CYAN}Full Setup (Run Everything)${C_RESET}"
             "${C_YELLOW}2)${C_RESET} ${C_CYAN}Base System Setup${C_RESET}"
-            "${C_YELLOW}3)${C_RESET} ${C_CYAN}Install Development Tools${C_RESET}"
+            "${C_YELLOW}3)${C_RESET} ${C_CYAN}Software & Development Setup${C_RESET}"
             "${C_YELLOW}4)${C_RESET} ${C_CYAN}Configure Terminal Theme${C_RESET}"
             "${C_YELLOW}5)${C_RESET} ${C_CYAN}Setup GUI (XFCE + VNC)${C_RESET}"
             "${C_YELLOW}6)${C_RESET} ${C_CYAN}Backup & Restore${C_RESET}"
@@ -822,8 +827,7 @@ interactive_menu() {
             "${C_YELLOW}9)${C_RESET} ${C_CYAN}Configure Starship Prompt${C_RESET}"
             "${C_YELLOW}10)${C_RESET} ${C_CYAN}Configure Git & SSH Keys${C_RESET}"
             "${C_YELLOW}11)${C_RESET} ${C_GREEN}Switch Default Shell to Zsh${C_RESET}"
-            "${C_YELLOW}12)${C_RESET} ${C_CYAN}Developer Stack Setup${C_RESET}"
-            "${C_YELLOW}13)${C_RESET} ${C_CYAN}Check for Updates${C_RESET}"
+            "${C_YELLOW}12)${C_RESET} ${C_CYAN}Check for Updates${C_RESET}"
             " "
             "${C_YELLOW}0)${C_RESET} ${C_RED}Exit${C_RESET}"
         )
@@ -831,13 +835,13 @@ interactive_menu() {
         draw_box "Debian Proot Menu" "${MENU_ITEMS[@]}"
 
         echo
-        echo -n -e "  ${C_BOLD}${C_YELLOW}Select an option [0-13]: ${C_RESET}"
+        echo -n -e "  ${C_BOLD}${C_YELLOW}Select an option [0-12]: ${C_RESET}"
         read -r menu_choice
 
         case "$menu_choice" in
             1) run_all ;;
             2) base_setup ;;
-            3) tools_setup ;;
+            3) dev_setup ;;
             4) theme_setup ;;
             5) gui_setup ;;
             6) backup_setup ;;
@@ -846,8 +850,7 @@ interactive_menu() {
             9) starship_setup && post_setup ;;
             10) git_setup ;;
             11) switch_shell ;;
-            12) dev_setup ;;
-            13) self_update ;;
+            12) self_update ;;
             0) echo -e "\n${C_GREEN}Goodbye!${C_RESET}"; exit 0 ;;
             *) warn "Invalid option, please try again."; sleep 1; continue ;;
         esac
