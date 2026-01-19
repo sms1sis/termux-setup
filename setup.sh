@@ -735,17 +735,17 @@ interactive_menu() {
             "${C_YELLOW}1)${C_RESET} ${C_CYAN}Full Setup (Run Everything)${C_RESET}"
             "${C_YELLOW}2)${C_RESET} ${C_CYAN}Storage Setup${C_RESET}"
             "${C_YELLOW}3)${C_RESET} ${C_CYAN}Base System Setup (Update/Upgrade)${C_RESET}"
-            "${C_YELLOW}4)${C_RESET} ${C_CYAN}Software & Development Setup${C_RESET}"
-            "${C_YELLOW}5)${C_RESET} ${C_CYAN}Configure Terminal Theme${C_RESET}"
-            "${C_YELLOW}6)${C_RESET} ${C_CYAN}Install Termux API & Aliases${C_RESET}"
-            "${C_YELLOW}7)${C_RESET} ${C_CYAN}Setup GUI (XFCE + VNC)${C_RESET}"
-            "${C_YELLOW}8)${C_RESET} ${C_CYAN}Setup Termux Services${C_RESET}"
-            "${C_YELLOW}9)${C_RESET} ${C_CYAN}Backup & Restore${C_RESET}"
-            "${C_YELLOW}10)${C_RESET} ${C_CYAN}Install Nerd Fonts${C_RESET}"
-            "${C_YELLOW}11)${C_RESET} ${C_CYAN}Configure Zsh & Oh My Zsh${C_RESET}"
-            "${C_YELLOW}12)${C_RESET} ${C_CYAN}Configure Starship Prompt${C_RESET}"
-            "${C_YELLOW}13)${C_RESET} ${C_CYAN}Configure Git & SSH Keys${C_RESET}"
-            "${C_YELLOW}14)${C_RESET} ${C_GREEN}Switch Default Shell to Zsh${C_RESET}"
+            "${C_YELLOW}4)${C_RESET} ${C_CYAN}Configure Zsh & Oh My Zsh${C_RESET}"
+            "${C_YELLOW}5)${C_RESET} ${C_CYAN}Configure Starship Prompt${C_RESET}"
+            "${C_YELLOW}6)${C_RESET} ${C_CYAN}Install Nerd Fonts${C_RESET}"
+            "${C_YELLOW}7)${C_RESET} ${C_CYAN}Configure Terminal Theme${C_RESET}"
+            "${C_YELLOW}8)${C_RESET} ${C_GREEN}Switch Default Shell to Zsh${C_RESET}"
+            "${C_YELLOW}9)${C_RESET} ${C_CYAN}Software & Development Setup${C_RESET}"
+            "${C_YELLOW}10)${C_RESET} ${C_CYAN}Install Termux API & Aliases${C_RESET}"
+            "${C_YELLOW}11)${C_RESET} ${C_CYAN}Setup GUI (XFCE + VNC)${C_RESET}"
+            "${C_YELLOW}12)${C_RESET} ${C_CYAN}Setup Termux Services${C_RESET}"
+            "${C_YELLOW}13)${C_RESET} ${C_CYAN}Backup & Restore${C_RESET}"
+            "${C_YELLOW}14)${C_RESET} ${C_CYAN}Configure Git & SSH Keys${C_RESET}"
             "${C_YELLOW}15)${C_RESET} ${C_CYAN}Check for Updates${C_RESET}"
             " "
             "${C_YELLOW}0)${C_RESET} ${C_RED}Exit${C_RESET}"
@@ -761,17 +761,17 @@ interactive_menu() {
             1) run_all ;;
             2) storage_setup ;;
             3) base_setup ;;
-            4) dev_setup ;;
-            5) theme_setup ;;
-            6) api_setup ;;
-            7) gui_setup ;;
-            8) services_setup ;;
-            9) backup_setup ;;
-            10) font_setup ;;
-            11) zsh_setup ;;
-            12) starship_setup && post_setup ;;
-            13) git_setup ;;
-            14) switch_shell ;;
+            4) zsh_setup ;;
+            5) starship_setup && post_setup ;;
+            6) font_setup ;;
+            7) theme_setup ;;
+            8) switch_shell ;;
+            9) dev_setup ;;
+            10) api_setup ;;
+            11) gui_setup ;;
+            12) services_setup ;;
+            13) backup_setup ;;
+            14) git_setup ;;
             15) self_update ;;
             0) echo -e "\n${C_GREEN}Goodbye!${C_RESET}"; exit 0 ;;
             *) warn "Invalid option, please try again."; sleep 1; continue ;;
