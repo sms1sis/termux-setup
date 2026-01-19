@@ -821,15 +821,15 @@ interactive_menu() {
         MENU_ITEMS=(
             "${C_YELLOW}1)${C_RESET} ${C_CYAN}Full Setup (Run Everything)${C_RESET}"
             "${C_YELLOW}2)${C_RESET} ${C_CYAN}Base System Setup${C_RESET}"
-            "${C_YELLOW}3)${C_RESET} ${C_CYAN}Software & Development Setup${C_RESET}"
-            "${C_YELLOW}4)${C_RESET} ${C_CYAN}Configure Terminal Theme${C_RESET}"
-            "${C_YELLOW}5)${C_RESET} ${C_CYAN}Setup GUI (XFCE + VNC)${C_RESET}"
-            "${C_YELLOW}6)${C_RESET} ${C_CYAN}Backup & Restore${C_RESET}"
-            "${C_YELLOW}7)${C_RESET} ${C_CYAN}Install Nerd Fonts${C_RESET}"
-            "${C_YELLOW}8)${C_RESET} ${C_CYAN}Configure Zsh & Oh My Zsh${C_RESET}"
-            "${C_YELLOW}9)${C_RESET} ${C_CYAN}Configure Starship Prompt${C_RESET}"
-            "${C_YELLOW}10)${C_RESET} ${C_CYAN}Configure Git & SSH Keys${C_RESET}"
-            "${C_YELLOW}11)${C_RESET} ${C_GREEN}Switch Default Shell to Zsh${C_RESET}"
+            "${C_YELLOW}3)${C_RESET} ${C_CYAN}Configure Zsh & Oh My Zsh${C_RESET}"
+            "${C_YELLOW}4)${C_RESET} ${C_CYAN}Configure Starship Prompt${C_RESET}"
+            "${C_YELLOW}5)${C_RESET} ${C_CYAN}Install Nerd Fonts${C_RESET}"
+            "${C_YELLOW}6)${C_RESET} ${C_CYAN}Configure Terminal Theme${C_RESET}"
+            "${C_YELLOW}7)${C_RESET} ${C_GREEN}Switch Default Shell to Zsh${C_RESET}"
+            "${C_YELLOW}8)${C_RESET} ${C_CYAN}Software & Development Setup${C_RESET}"
+            "${C_YELLOW}9)${C_RESET} ${C_CYAN}Setup GUI (XFCE + VNC)${C_RESET}"
+            "${C_YELLOW}10)${C_RESET} ${C_CYAN}Backup & Restore${C_RESET}"
+            "${C_YELLOW}11)${C_RESET} ${C_CYAN}Configure Git & SSH Keys${C_RESET}"
             "${C_YELLOW}12)${C_RESET} ${C_CYAN}Check for Updates${C_RESET}"
             " "
             "${C_YELLOW}0)${C_RESET} ${C_RED}Exit${C_RESET}"
@@ -844,15 +844,15 @@ interactive_menu() {
         case "$menu_choice" in
             1) run_all ;;
             2) base_setup ;;
-            3) dev_setup ;;
-            4) theme_setup ;;
-            5) gui_setup ;;
-            6) backup_setup ;;
-            7) font_setup ;;
-            8) zsh_setup ;;
-            9) starship_setup && post_setup ;;
-            10) git_setup ;;
-            11) switch_shell ;;
+            3) zsh_setup ;;
+            4) starship_setup && post_setup ;;
+            5) font_setup ;;
+            6) theme_setup ;;
+            7) switch_shell ;;
+            8) dev_setup ;;
+            9) gui_setup ;;
+            10) backup_setup ;;
+            11) git_setup ;;
             12) self_update ;;
             0) echo -e "\n${C_GREEN}Goodbye!${C_RESET}"; exit 0 ;;
             *) warn "Invalid option, please try again."; sleep 1; continue ;;
