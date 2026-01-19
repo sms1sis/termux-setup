@@ -14,12 +14,19 @@ The goal: Transform a fresh install into a powerful, visually appealing CLI work
 
 ---
 
-## ✨ Features (Common)
+## ✨ Features
 
 - **Interactive Menu:** Run without arguments to access a stylish selection menu.
 - **Enhanced UI:** Color-coded logs, progress spinners, and stylish banners.
+- **Modular Architecture:** Core logic separated into `utils.sh` for stability and easy maintenance.
+- **Self-Update:** Built-in ability to check for and pull the latest script updates from GitHub.
 - **Shell & Prompt:** Installs **Zsh**, **Oh My Zsh**, and the **Starship** prompt.
 - **Font Selection:** Choose from multiple **Nerd Fonts** (FiraCode, JetBrainsMono, Meslo, etc.) to enable icon support.
+- **Developer Stacks:** Dedicated menu to install full tech stacks:
+    - **Python:** Python + `pip` + `uv` (ultra-fast package installer).
+    - **Node.js:** `fnm` (Fast Node Manager) for managing Node versions.
+    - **Rust:** `rustup` (Debian) or `pkg` (Termux).
+    - **Tools:** Neovim & Tmux.
 - **Plugins:** Auto-installs `zsh-autosuggestions` and `zsh-syntax-highlighting`.
 - **Git Integration:** Auto-configures global user/email, generates `ed25519` SSH keys, and tests GitHub connectivity. Includes a custom `upload` alias for quick commits.
 - **Config Management:** Automatically backs up existing files (`.zshrc`, `starship.toml`) before overwriting.
@@ -32,17 +39,17 @@ The goal: Transform a fresh install into a powerful, visually appealing CLI work
 Designed for the host Termux environment.
 - **Interactive Menu:** Easily toggle specific setup tasks.
 - **Storage:** Requests Android storage access.
+- **Dev Stacks:** Install Python, Node, Rust, Neovim, etc., with a single click.
 - **Font Selection:** Menu-driven installation of popular Nerd Fonts.
 - **Tools:** `lsd`, `htop`, `micro`, `openssh`, etc.
 
 ### 2. `proot-debian-setup.sh` (Ubuntu/Debian Proot)
 An advanced adapter for Linux distributions running via `proot-distro`.
-- **Interactive Menu:** Unified menu interface similar to the native script.
-- **Font Selection:** Cross-environment font installer that updates your Termux terminal settings from within PRoot.
+- **Unified Interface:** Shares the same look and feel as the native script.
 - **Sudo-Aware:** Automatically detects if running as **Root** or **User**. Uses `sudo` for system commands when needed.
+- **Dev Stacks (Proot):** Installs Linux-native versions of tools (e.g., `rustup` script instead of Termux pkg).
 - **Conflict Resolution:** Configures `.zshrc` to prioritize native container paths (`/usr/bin`) over Termux host paths, fixing "binary bleeding" issues.
-- **Latest Starship:** Installs Starship via the official installer to `/usr/local/bin`, ensuring the latest version (avoiding stale apt packages).
-- **Multi-User:** Can be used to set up the Root account *and* regular users.
+- **Font Setup:** Cross-environment font installer that updates your *Termux* terminal settings from *within* PRoot.
 
 ---
 
@@ -71,14 +78,14 @@ Log in as your preferred user and run the script. It will prompt for your sudo p
 # Login as your user (e.g., sms1sis)
 proot-distro login ubuntu --user <your_username>
 
+# Clone repo if not already done inside proot
+git clone https://github.com/sms1sis/termux-setup.git
+cd termux-setup
+chmod +x proot-debian-setup.sh
+
 # Run the interactive setup
 ./proot-debian-setup.sh
 ```
-
-### **Fallback: Root-First Setup**
-If `sudo` is not yet installed in your container or your user lacks permissions:
-1. Log in as **root** (`proot-distro login ubuntu`) and run `./proot-debian-setup.sh base` to install `sudo` and core tools.
-2. Log in as your **user** and run `./proot-debian-setup.sh` to finish your personal configuration.
 
 ---
 
@@ -95,8 +102,10 @@ The scripts can be run with arguments for automation or without arguments for th
 | `./setup.sh font` | Open Font selection menu. |
 | `./setup.sh zsh` | Configure Zsh + Oh My Zsh + Plugins. |
 | `./setup.sh starship` | Configure Starship prompt & choose preset. |
-| `./setup.sh post` | Customize Starship Configuration. |
 | `./setup.sh git` | Setup Git user & generate SSH keys. |
+| **New Features** | |
+| Select in Menu | **Developer Stack Setup** (Python, Node, Rust, etc.) |
+| Select in Menu | **Check for Updates** (Self-update script) |
 
 ---
 
