@@ -29,6 +29,7 @@ spinner() {
     local pid=$1
     local delay=0.1
     local spinstr='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
+    printf "\e[?25l" # Hide cursor
     while kill -0 "$pid" 2>/dev/null; do
         local temp="${spinstr#?}"
         printf " ${C_CYAN}%s${C_RESET}  " "${spinstr:0:1}"
@@ -37,6 +38,7 @@ spinner() {
         printf "\b\b\b\b"
     done
     printf "    \b\b\b\b"
+    printf "\e[?25h" # Show cursor
 }
 
 typewriter() {
