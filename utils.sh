@@ -131,14 +131,14 @@ execute() {
     
     info "$msg"
 
+    # For apt/apt-get/pkg commands, ensure non-interactive
+    if [[ "$cmd" == *"apt "* || "$cmd" == *"apt-get "* || "$cmd" == *"pkg "* ]]; then
+         cmd="DEBIAN_FRONTEND=noninteractive $cmd"
+    fi
+
     # Handle sudo if SUDO variable is set in the environment (for proot script)
     if [ -n "${SUDO:-}" ]; then
-        # For apt commands in proot, ensure non-interactive
-        if [[ "$cmd" == *"apt install"* || "$cmd" == *"apt update"* || "$cmd" == *"apt upgrade"* || "$cmd" == *"apt-get install"* || "$cmd" == *"apt-get update"* || "$cmd" == *"apt-get upgrade"* ]]; then
-             cmd="DEBIAN_FRONTEND=noninteractive $SUDO $cmd"
-        else
-             cmd="$SUDO $cmd"
-        fi
+         cmd="$SUDO $cmd"
     fi
 
     # Run command

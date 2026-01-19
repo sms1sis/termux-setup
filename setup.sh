@@ -17,7 +17,7 @@ fi
 install_pkg() {
     local pkg=$1
     if ! command -v "$pkg" >/dev/null 2>&1; then
-        execute "pkg install -y $pkg" "Installing $pkg"
+        execute "apt-get install -y $pkg" "Installing $pkg"
     else
         info "$pkg already installed, skipping."
     fi
@@ -50,7 +50,7 @@ base_setup() {
     section "Base System Setup"
     # Auto-answer configuration prompts (Use new configs if conflict)
     local apt_opts='-o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confnew"'
-    execute "DEBIAN_FRONTEND=noninteractive pkg update -y && DEBIAN_FRONTEND=noninteractive pkg upgrade -y $apt_opts" "Updating and upgrading packages"
+    execute "DEBIAN_FRONTEND=noninteractive apt-get update -y && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y $apt_opts" "Updating and upgrading packages"
     for p in git curl wget zsh starship; do install_pkg "$p"; done
     log "Base setup complete."
 }
@@ -219,7 +219,7 @@ api_setup() {
 
 gui_setup() {
     section "Desktop Environment (XFCE + VNC) Setup"
-    execute "pkg install -y xfce4 tigervnc" "Installing XFCE4 and TigerVNC"
+    execute "apt-get install -y xfce4 tigervnc" "Installing XFCE4 and TigerVNC"
 
     # VNC Start Script
     cat << 'EOF' > "$PREFIX/bin/vnc-start"
