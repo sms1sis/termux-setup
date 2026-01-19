@@ -22,6 +22,11 @@ The goal: Transform a fresh install into a powerful, visually appealing CLI work
 - **Self-Update:** Built-in ability to check for and pull the latest script updates from GitHub.
 - **Shell & Prompt:** Installs **Zsh**, **Oh My Zsh**, and the **Starship** prompt.
 - **Font Selection:** Choose from multiple **Nerd Fonts** (FiraCode, JetBrainsMono, Meslo, etc.) to enable icon support.
+- **Terminal Themes:** Apply color schemes like Dracula, One Dark, Gruvbox, etc.
+- **Termux API:** Seamless integration with Android API (Battery, SMS, Clipboard).
+- **Desktop Environment:** One-click setup for XFCE4 + TigerVNC (GUI).
+- **Backup & Restore:** Easy backup/restore utility for your home directory.
+- **Termux Services:** Integration with runit for managing background services.
 - **Developer Stacks:** Dedicated menu to install full tech stacks:
     - **Python:** Python + `pip` + `uv` (ultra-fast package installer).
     - **Node.js:** `fnm` (Fast Node Manager) for managing Node versions.
@@ -99,6 +104,11 @@ The scripts can be run with arguments for automation or without arguments for th
 | `./setup.sh all --switch` | Run full suite and switch shell on next login. |
 | `./setup.sh base` | Install base packages only. |
 | `./setup.sh tools` | Install developer utilities. |
+| `./setup.sh theme` | Open Color Theme selection menu. |
+| `./setup.sh api` | Install Termux API & Aliases. |
+| `./setup.sh gui` | Install XFCE4 Desktop & VNC. |
+| `./setup.sh services` | Install Termux Services (runit). |
+| `./setup.sh backup` | Run Backup & Restore utility. |
 | `./setup.sh font` | Open Font selection menu. |
 | `./setup.sh zsh` | Configure Zsh + Oh My Zsh + Plugins. |
 | `./setup.sh starship` | Configure Starship prompt & choose preset. |

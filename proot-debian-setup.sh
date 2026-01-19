@@ -38,12 +38,15 @@ install_pkg() {
 
 # --- Main Setup Functions ---
 main_banner() {
-    echo -e "${C_BLUE}${C_BOLD}"
-    echo "╔════════════════════════════════════════════════════════════╗"
-    echo "║                                                            ║"
-    echo "║           🚀 Debian Proot Unified Setup Script 🚀          ║"
-    echo "║                                                            ║"
-    echo "╚════════════════════════════════════════════════════════════╝"
+    clear
+    echo -e "${C_RED}${C_BOLD}"
+    cat << "EOF"
+   ___      _     _               
+  |   \ ___| |__ (_) __ _ _ _    
+  | |) / -_) '_ \| |/ _` | ' \   
+  |___/\___|_.__/|_|\__,_|_||_|  
+      Proot Unified Setup
+EOF
     echo -e "${C_RESET}"
 }
 
@@ -66,6 +69,241 @@ tools_setup() {
     # Removed 'tsu' and 'which' (usually pre-installed or redundant in Debian)
     for p in lsd htop unzip micro; do install_pkg "$p"; done
     log "Utilities installed."
+}
+
+theme_setup() {
+    section "Termux Color Theme Setup (Host)"
+    TERMUX_HOME="/data/data/com.termux/files/home"
+    CONF_DIR="$TERMUX_HOME/.termux"
+    
+    if [ ! -d "$TERMUX_HOME" ]; then
+        warn "Termux home directory not found at $TERMUX_HOME. Theme installation might not work as expected."
+        CONF_DIR="$HOME/.termux"
+    fi
+
+    mkdir -p "$CONF_DIR"
+
+    # Theme Definitions
+    declare -A THEMES
+    
+    THEMES["Default"]="# Default Termux
+background=#000000
+foreground=#FFFFFF
+cursor=#FFFFFF"
+
+    THEMES["Dracula"]="# Dracula
+background=#282a36
+foreground=#f8f8f2
+cursor=#f8f8f2
+color0=#21222c
+color1=#ff5555
+color2=#50fa7b
+color3=#f1fa8c
+color4=#bd93f9
+color5=#ff79c6
+color6=#8be9fd
+color7=#f8f8f2
+color8=#6272a4
+color9=#ff6e6e
+color10=#69ff94
+color11=#ffffa5
+color12=#d6acff
+color13=#ff92df
+color14=#a4ffff
+color15=#ffffff"
+
+    THEMES["One Dark"]="# One Dark
+background=#282c34
+foreground=#abb2bf
+cursor=#abb2bf
+color0=#282c34
+color1=#e06c75
+color2=#98c379
+color3=#e5c07b
+color4=#61afef
+color5=#c678dd
+color6=#56b6c2
+color7=#abb2bf
+color8=#5c6370
+color9=#e06c75
+color10=#98c379
+color11=#e5c07b
+color12=#61afef
+color13=#c678dd
+color14=#56b6c2
+color15=#ffffff"
+
+    THEMES["Gruvbox Dark"]="# Gruvbox Dark
+background=#282828
+foreground=#ebdbb2
+cursor=#ebdbb2
+color0=#282828
+color1=#cc241d
+color2=#98971a
+color3=#d79921
+color4=#458588
+color5=#b16286
+color6=#689d6a
+color7=#a89984
+color8=#928374
+color9=#fb4934
+color10=#b8bb26
+color11=#fabd2f
+color12=#83a598
+color13=#d3869b
+color14=#8ec07c
+color15=#ebdbb2"
+
+    THEMES["Solarized Light"]="# Solarized Light
+background=#fdf6e3
+foreground=#657b83
+cursor=#657b83
+color0=#073642
+color1=#dc322f
+color2=#859900
+color3=#b58900
+color4=#268bd2
+color5=#d33682
+color6=#2aa198
+color7=#eee8d5
+color8=#002b36
+color9=#cb4b16
+color10=#586e75
+color11=#657b83
+color12=#839496
+color13=#6c71c4
+color14=#93a1a1
+color15=#fdf6e3"
+
+    OPTIONS=("Default" "Dracula" "One Dark" "Gruvbox Dark" "Solarized Light")
+
+    echo -e "${C_MAGENTA}${C_BOLD}🎨 Choose a Color Theme${C_RESET}"
+    echo
+    echo -e "  ${C_YELLOW}0)${C_RESET} ${C_RED}Back to Main Menu${C_RESET}"
+    
+    for i in "${!OPTIONS[@]}"; do
+        idx=$((i+1))
+        echo -e "  ${C_YELLOW}$idx)${C_RESET} ${C_BLUE}${OPTIONS[i]}${C_RESET}"
+    done
+    
+    echo
+    echo -n -e "${C_CYAN}Selection ${C_RESET}> "
+    read -r choice
+    echo
+
+    if [ "$choice" == "0" ]; then
+        return 0
+    fi
+
+    if [[ "$choice" =~ ^[0-9]+$ ]] && (( choice >= 1 && choice <= ${#OPTIONS[@]} )); then
+        SELECTED="${OPTIONS[choice-1]}"
+        echo "${THEMES[$SELECTED]}" > "$CONF_DIR/colors.properties"
+        
+        # Try to reload settings
+        if command -v termux-reload-settings >/dev/null 2>&1; then
+            termux-reload-settings
+        elif [ -f "/data/data/com.termux/files/usr/bin/termux-reload-settings" ]; then
+            /data/data/com.termux/files/usr/bin/termux-reload-settings
+        else
+            info "Theme applied. You may need to manualy reload Termux settings."
+        fi
+        
+        log "Theme ${C_BOLD}$SELECTED${C_RESET} applied."
+    else
+        warn "Invalid selection."
+    fi
+}
+
+gui_setup() {
+    section "Desktop Environment (XFCE + VNC) Setup"
+    execute "apt install -y xfce4 xfce4-goodies tigervnc-standalone-server" "Installing XFCE4 and TigerVNC"
+
+    # VNC Start Script
+    cat << 'EOF' > "/usr/local/bin/vnc-start"
+#!/bin/bash
+export DISPLAY=":1"
+echo "Starting VNC Server on :1..."
+if [ -f "$HOME/.vnc/pid" ]; then
+    rm "$HOME/.vnc/pid"
+fi
+# Kill any existing on :1
+vncserver -kill :1 >/dev/null 2>&1
+rm -rf /tmp/.X1-lock
+rm -rf /tmp/.X11-unix/X1
+
+vncserver :1 -geometry 1280x720 -depth 24 -name "Debian" -xstartup "xfce4-session"
+echo "VNC Started. Connect using address: localhost:5901"
+EOF
+
+    # VNC Stop Script
+    cat << 'EOF' > "/usr/local/bin/vnc-stop"
+#!/bin/bash
+export DISPLAY=":1"
+echo "Stopping VNC Server..."
+vncserver -kill :1
+rm -rf /tmp/.X1-lock
+rm -rf /tmp/.X11-unix/X1
+echo "VNC Stopped."
+EOF
+
+    chmod +x "/usr/local/bin/vnc-start"
+    chmod +x "/usr/local/bin/vnc-stop"
+    
+    log "GUI Setup Complete."
+    info "Run ${C_BOLD}vnc-start${C_RESET} to start the desktop."
+    info "Run ${C_BOLD}vnc-stop${C_RESET} to stop it."
+    warn "You will need to set a VNC password on the first run."
+}
+
+backup_setup() {
+    section "Backup & Restore (Proot Home)"
+    echo -e "  ${C_YELLOW}1)${C_RESET} ${C_CYAN}Backup Home Directory${C_RESET}"
+    echo -e "  ${C_YELLOW}2)${C_RESET} ${C_CYAN}Restore Home Directory${C_RESET}"
+    echo -e "  ${C_YELLOW}0)${C_RESET} ${C_RED}Back${C_RESET}"
+    echo -n -e "${C_CYAN}Choice > ${C_RESET}"
+    read -r choice
+
+    # Check for external storage access
+    BACKUP_DIR="/sdcard"
+    if [ ! -d "$BACKUP_DIR" ]; then
+        warn "/sdcard not found. Saving to $HOME/backups instead."
+        BACKUP_DIR="$HOME/backups"
+        mkdir -p "$BACKUP_DIR"
+    fi
+
+    case "$choice" in
+        1)
+            BACKUP_FILE="$BACKUP_DIR/debian_home_backup_$(date +%Y%m%d).tar.gz"
+            info "Backing up $HOME to $BACKUP_FILE..."
+            # Exclude cache and backups dir
+            if tar -czf "$BACKUP_FILE" --exclude='.cache' --exclude='backups' -C "$HOME" . ; then
+                log "Backup saved to $BACKUP_FILE"
+            else
+                error_exit "Backup failed."
+            fi
+            ;;
+        2)
+            echo -e "${C_CYAN}Enter full path to backup file:${C_RESET}"
+            read -r restore_path
+            if [ -f "$restore_path" ]; then
+                warn "This will OVERWRITE files in $HOME. Continue? (y/n)"
+                read -r confirm
+                if [[ "$confirm" == "y" ]]; then
+                    info "Restoring..."
+                    if tar -xzf "$restore_path" -C "$HOME"; then
+                        log "Restore complete."
+                    else
+                        error_exit "Restore failed."
+                    fi
+                else
+                    info "Restore cancelled."
+                fi
+            else
+                warn "File not found."
+            fi
+            ;;
+        *) ;;
+    esac
 }
 
 font_setup() {
@@ -560,38 +798,54 @@ run_all() {
 }
 
 interactive_menu() {
+    # Intro animation
+    clear
+    main_banner
+    typewriter "${C_CYAN}Welcome to the Debian Proot Setup Script!${C_RESET}" 0.02
+    sleep 0.5
+
     while true; do
         clear
         main_banner
-        echo -e "${C_BOLD}${C_MAGENTA}  Main Menu (Debian Proot)${C_RESET}"
-        echo -e "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo -e "  ${C_YELLOW}1)${C_RESET} ${C_CYAN}Full Setup (Run Everything)${C_RESET}"
-        echo -e "  ${C_YELLOW}2)${C_RESET} ${C_CYAN}Base System Setup (apt update/upgrade)${C_RESET}"
-        echo -e "  ${C_YELLOW}3)${C_RESET} ${C_CYAN}Install Development Tools (lsd, htop, etc.)${C_RESET}"
-        echo -e "  ${C_YELLOW}4)${C_RESET} ${C_CYAN}Install Nerd Fonts (for Termux)${C_RESET}"
-        echo -e "  ${C_YELLOW}5)${C_RESET} ${C_CYAN}Configure Zsh & Oh My Zsh${C_RESET}"
-        echo -e "  ${C_YELLOW}6)${C_RESET} ${C_CYAN}Configure Starship Prompt & Presets${C_RESET}"
-        echo -e "  ${C_YELLOW}7)${C_RESET} ${C_CYAN}Configure Git & SSH Keys${C_RESET}"
-        echo -e "  ${C_YELLOW}8)${C_RESET} ${C_GREEN}Switch Default Shell to Zsh${C_RESET}"
-        echo -e "  ${C_YELLOW}9)${C_RESET} ${C_CYAN}Developer Stack Setup (Python, Node, Rust...)${C_RESET}"
-        echo -e "  ${C_YELLOW}10)${C_RESET} ${C_CYAN}Check for Updates${C_RESET}"
-        echo -e "  ${C_YELLOW}0)${C_RESET} ${C_RED}Exit${C_RESET}"
-        echo -e "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        
+        MENU_ITEMS=(
+            "${C_YELLOW}1)${C_RESET} ${C_CYAN}Full Setup (Run Everything)${C_RESET}"
+            "${C_YELLOW}2)${C_RESET} ${C_CYAN}Base System Setup${C_RESET}"
+            "${C_YELLOW}3)${C_RESET} ${C_CYAN}Install Development Tools${C_RESET}"
+            "${C_YELLOW}4)${C_RESET} ${C_CYAN}Configure Terminal Theme${C_RESET}"
+            "${C_YELLOW}5)${C_RESET} ${C_CYAN}Setup GUI (XFCE + VNC)${C_RESET}"
+            "${C_YELLOW}6)${C_RESET} ${C_CYAN}Backup & Restore${C_RESET}"
+            "${C_YELLOW}7)${C_RESET} ${C_CYAN}Install Nerd Fonts${C_RESET}"
+            "${C_YELLOW}8)${C_RESET} ${C_CYAN}Configure Zsh & Oh My Zsh${C_RESET}"
+            "${C_YELLOW}9)${C_RESET} ${C_CYAN}Configure Starship Prompt${C_RESET}"
+            "${C_YELLOW}10)${C_RESET} ${C_CYAN}Configure Git & SSH Keys${C_RESET}"
+            "${C_YELLOW}11)${C_RESET} ${C_GREEN}Switch Default Shell to Zsh${C_RESET}"
+            "${C_YELLOW}12)${C_RESET} ${C_CYAN}Developer Stack Setup${C_RESET}"
+            "${C_YELLOW}13)${C_RESET} ${C_CYAN}Check for Updates${C_RESET}"
+            " "
+            "${C_YELLOW}0)${C_RESET} ${C_RED}Exit${C_RESET}"
+        )
+
+        draw_box "Debian Proot Menu" "${MENU_ITEMS[@]}"
+
         echo
-        echo -n -e "  ${C_BOLD}${C_YELLOW}Select an option [0-10]: ${C_RESET}"
+        echo -n -e "  ${C_BOLD}${C_YELLOW}Select an option [0-13]: ${C_RESET}"
         read -r menu_choice
 
         case "$menu_choice" in
             1) run_all ;;
             2) base_setup ;;
             3) tools_setup ;;
-            4) font_setup ;;
-            5) zsh_setup ;;
-            6) starship_setup && post_setup ;;
-            7) git_setup ;;
-            8) switch_shell ;;
-            9) dev_setup ;;
-            10) self_update ;;
+            4) theme_setup ;;
+            5) gui_setup ;;
+            6) backup_setup ;;
+            7) font_setup ;;
+            8) zsh_setup ;;
+            9) starship_setup && post_setup ;;
+            10) git_setup ;;
+            11) switch_shell ;;
+            12) dev_setup ;;
+            13) self_update ;;
             0) echo -e "\n${C_GREEN}Goodbye!${C_RESET}"; exit 0 ;;
             *) warn "Invalid option, please try again."; sleep 1; continue ;;
         esac
@@ -616,6 +870,9 @@ main() {
         case "$arg" in
             base) base_setup ;;
             tools) tools_setup ;;
+            theme) theme_setup ;;
+            gui) gui_setup ;;
+            backup) backup_setup ;;
             font) font_setup ;;
             zsh) zsh_setup ;;
             starship) starship_setup ;;

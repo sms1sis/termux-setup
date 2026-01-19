@@ -28,15 +28,84 @@ section()    { echo -e "\n${C_MAGENTA}✨ ${C_BOLD}$1${C_RESET}\n"; }
 spinner() {
     local pid=$1
     local delay=0.1
-    local spinstr='|/-\'
+    local spinstr='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
     while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
         local temp=${spinstr#?}
-        printf " [%c]  " "$spinstr"
+        printf " ${C_CYAN}%c${C_RESET}  " "$spinstr"
         local spinstr=$temp${spinstr%???}
         sleep $delay
         printf "\b\b\b\b\b\b"
     done
     printf "    \b\b\b\b"
+}
+
+typewriter() {
+    local text="$1"
+    local delay=${2:-0.03}
+    local n=${#text}
+    for (( i=0; i<n; i++ )); do
+        printf "${text:$i:1}"
+        sleep "$delay"
+    done
+    echo ""
+}
+
+draw_box() {
+    local title="$1"
+    shift
+    local lines=("$@")
+    local longest=0
+    
+    # Calculate width
+    for line in "${lines[@]}"; do
+        # Strip ANSI codes for length calculation
+        clean_line=$(echo -e "$line" | sed 's/\x1b\[[0-9;]*m//g')
+        len=${#clean_line}
+        if [ "$len" -gt "$longest" ]; then
+            longest=$len
+        fi
+    done
+
+    # Add padding
+    width=$((longest + 4))
+    
+    # Top border
+    printf "${C_BLUE}╔"
+    for ((i=0; i<width; i++)); do printf "═"; done
+    printf "╗${C_RESET}\n"
+    
+    # Title (centered if possible, or just printed)
+    if [ -n "$title" ]; then
+        clean_title=$(echo -e "$title" | sed 's/\x1b\[[0-9;]*m//g')
+        title_len=${#clean_title}
+        pad=$(( (width - title_len) / 2 ))
+        printf "${C_BLUE}║${C_RESET}"
+        for ((i=0; i<pad; i++)); do printf " "; done
+        printf "${C_BOLD}${C_MAGENTA}%s${C_RESET}" "$title"
+        pad_right=$(( width - title_len - pad ))
+        for ((i=0; i<pad_right; i++)); do printf " "; done
+        printf "${C_BLUE}║${C_RESET}\n"
+        
+        # Separator
+        printf "${C_BLUE}╠"
+        for ((i=0; i<width; i++)); do printf "═"; done
+        printf "╣${C_RESET}\n"
+    fi
+
+    # Content
+    for line in "${lines[@]}"; do
+        clean_line=$(echo -e "$line" | sed 's/\x1b\[[0-9;]*m//g')
+        len=${#clean_line}
+        pad=$(( width - len - 2 )) # -2 for left padding
+        printf "${C_BLUE}║${C_RESET} %b" "$line"
+        for ((i=0; i<pad; i++)); do printf " "; done
+        printf " ${C_BLUE}║${C_RESET}\n"
+    done
+
+    # Bottom border
+    printf "${C_BLUE}╚"
+    for ((i=0; i<width; i++)); do printf "═"; done
+    printf "╝${C_RESET}\n"
 }
 
 execute() {
