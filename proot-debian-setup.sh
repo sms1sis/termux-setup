@@ -1,5 +1,6 @@
 #!/bin/bash
 # Debian Proot Unified Setup Script (Adapted from Termux version)
+# by sms1sis
 
 # --- Boilerplate and Utilities ---
 set -uo pipefail
@@ -49,6 +50,7 @@ main_banner() {
   | |) / -_) '_ \| |/ _` | ' \   
   |___/\___|_.__/|_|\__,_|_||_|  
       Proot Unified Setup
+          by sms1sis
 EOF
     echo -e "${C_RESET}"
 }

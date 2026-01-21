@@ -92,27 +92,27 @@ draw_box() {
     # Add padding
     width=$((longest + 4))
     
-    # Top border
-    printf "${C_BLUE}╔"
-    for ((i=0; i<width; i++)); do printf "═"; done
-    printf "╗${C_RESET}\n"
+    # Top border (Rounded)
+    printf "${C_BLUE}╭"
+    for ((i=0; i<width; i++)); do printf "─"; done
+    printf "╮${C_RESET}\n"
     
     # Title (centered if possible, or just printed)
     if [ -n "$title" ]; then
         clean_title=$(echo -e "$title" | sed 's/\x1b\[[0-9;]*m//g')
         title_len=${#clean_title}
         pad=$(( (width - title_len) / 2 ))
-        printf "${C_BLUE}║${C_RESET}"
+        printf "${C_BLUE}│${C_RESET}"
         for ((i=0; i<pad; i++)); do printf " "; done
         printf "${C_BOLD}${C_MAGENTA}%s${C_RESET}" "$title"
         pad_right=$(( width - title_len - pad ))
         for ((i=0; i<pad_right; i++)); do printf " "; done
-        printf "${C_BLUE}║${C_RESET}\n"
+        printf "${C_BLUE}│${C_RESET}\n"
         
         # Separator
-        printf "${C_BLUE}╠"
-        for ((i=0; i<width; i++)); do printf "═"; done
-        printf "╣${C_RESET}\n"
+        printf "${C_BLUE}├"
+        for ((i=0; i<width; i++)); do printf "─"; done
+        printf "┤${C_RESET}\n"
     fi
 
     # Content
@@ -121,15 +121,15 @@ draw_box() {
         clean_line="${clean_lines[$i]}"
         len=${#clean_line}
         pad=$(( width - len - 2 )) # -2 for left padding
-        printf "${C_BLUE}║${C_RESET} %b" "$line"
+        printf "${C_BLUE}│${C_RESET} %b" "$line"
         for ((j=0; j<pad; j++)); do printf " "; done
-        printf " ${C_BLUE}║${C_RESET}\n"
+        printf " ${C_BLUE}│${C_RESET}\n"
     done
 
-    # Bottom border
-    printf "${C_BLUE}╚"
-    for ((i=0; i<width; i++)); do printf "═"; done
-    printf "╝${C_RESET}\n"
+    # Bottom border (Rounded)
+    printf "${C_BLUE}╰"
+    for ((i=0; i<width; i++)); do printf "─"; done
+    printf "╯${C_RESET}\n"
 }
 
 execute() {

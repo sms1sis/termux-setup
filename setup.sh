@@ -1,5 +1,6 @@
 #!/data/data/com.termux/files/usr/bin/bash
 # Termux Unified Setup Script
+# by sms1sis
 
 # --- Boilerplate and Utilities ---
 set -uo pipefail
@@ -36,6 +37,7 @@ main_banner() {
     | |  __/ |  | | | | | | |_| |>  <   
     |_|\___|_|  |_| |_| |_|\__,_/_/\_\  
            Unified Setup Script
+                by sms1sis
 EOF
     echo -e "${C_RESET}"
 }
