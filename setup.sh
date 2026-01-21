@@ -717,7 +717,7 @@ run_all() {
     zsh_setup
     starship_setup
     post_setup
-    git_setup
+    switch_shell
     # dev_setup is manual
 }
 
@@ -742,6 +742,8 @@ interactive_menu() {
             "${C_YELLOW}6)${C_RESET} ${C_CYAN}Install Nerd Fonts${C_RESET}"
             "${C_YELLOW}7)${C_RESET} ${C_CYAN}Configure Terminal Theme${C_RESET}"
             "${C_YELLOW}8)${C_RESET} ${C_GREEN}Switch Default Shell to Zsh${C_RESET}"
+            " "
+            "  ${C_BOLD}${C_MAGENTA}--- Optional Features ---${C_RESET}"
             "${C_YELLOW}9)${C_RESET} ${C_CYAN}Software & Development Setup${C_RESET}"
             "${C_YELLOW}10)${C_RESET} ${C_CYAN}Install Termux API & Aliases${C_RESET}"
             "${C_YELLOW}11)${C_RESET} ${C_CYAN}Setup GUI (XFCE + VNC)${C_RESET}"

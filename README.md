@@ -101,19 +101,19 @@ The scripts can be run with arguments for automation or without arguments for th
 | Command | Description |
 | :--- | :--- |
 | `./setup.sh` | **Open the Interactive Menu (Recommended)** |
-| `./setup.sh all --switch` | Run full suite and switch shell on next login. |
+| `./setup.sh all` | **Full Setup:** Run core suite (Base, Zsh, Starship, Fonts, Theme) and switch shell. |
 | `./setup.sh base` | Install base packages only. |
 | `./setup.sh tools` | Install developer utilities. |
 | `./setup.sh theme` | Open Color Theme selection menu. |
+| `./setup.sh font` | Open Font selection menu. |
+| `./setup.sh zsh` | Configure Zsh + Oh My Zsh + Plugins. |
+| `./setup.sh starship` | Configure Starship prompt & choose preset. |
+| **Optional Features** | |
+| `./setup.sh git` | Setup Git user & generate SSH keys. |
 | `./setup.sh api` | Install Termux API & Aliases. |
 | `./setup.sh gui` | Install XFCE4 Desktop & VNC. |
 | `./setup.sh services` | Install Termux Services (runit). |
 | `./setup.sh backup` | Run Backup & Restore utility. |
-| `./setup.sh font` | Open Font selection menu. |
-| `./setup.sh zsh` | Configure Zsh + Oh My Zsh + Plugins. |
-| `./setup.sh starship` | Configure Starship prompt & choose preset. |
-| `./setup.sh git` | Setup Git user & generate SSH keys. |
-| **New Features** | |
 | Select in Menu | **Developer Stack Setup** (Python, Node, Rust, etc.) |
 | Select in Menu | **Check for Updates** (Self-update script) |
 
