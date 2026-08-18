@@ -3,7 +3,7 @@
 # by sms1sis
 
 # --- Boilerplate and Utilities ---
-VERSION="1.2.0"
+VERSION="1.3.0"
 set -uo pipefail
 LOGFILE="$HOME/termux_setup.log"
 
@@ -219,6 +219,7 @@ color15=#fdf6e3"
     else
         warn "Invalid selection."
     fi
+    read -rp "$(printf "${C_CYAN}Press [Enter] to return to the menu...${C_RESET}")"
 }
 
 api_setup() {
@@ -344,15 +345,15 @@ font_setup() {
     # is Name|release-zip-URL|ttf-filename-inside-the-zip.
     local NERD_BASE="https://github.com/ryanoasis/nerd-fonts/releases/latest/download"
     FONTS=(
-        "FiraCode|$NERD_BASE/FiraCode.zip|FiraCodeNerdFont-Regular.ttf"
-        "JetBrainsMono|$NERD_BASE/JetBrainsMono.zip|JetBrainsMonoNerdFont-Regular.ttf"
-        "Meslo|$NERD_BASE/Meslo.zip|MesloLGSNerdFont-Regular.ttf"
-        "Hack|$NERD_BASE/Hack.zip|HackNerdFont-Regular.ttf"
-        "SourceCodePro|$NERD_BASE/SourceCodePro.zip|SauceCodeProNerdFont-Regular.ttf"
-        "UbuntuMono|$NERD_BASE/UbuntuMono.zip|UbuntuMonoNerdFont-Regular.ttf"
-        "CascadiaCode|$NERD_BASE/CascadiaCode.zip|CaskaydiaCoveNerdFont-Regular.ttf"
-        "Agave|$NERD_BASE/Agave.zip|AgaveNerdFont-Regular.ttf"
-        "Iosevka|$NERD_BASE/Iosevka.zip|IosevkaNerdFont-Regular.ttf"
+        "FiraCode|$NERD_BASE/FiraCode.zip|FiraCodeNerdFontMono-Regular.ttf"
+        "JetBrainsMono|$NERD_BASE/JetBrainsMono.zip|JetBrainsMonoNerdFontMono-Regular.ttf"
+        "Meslo|$NERD_BASE/Meslo.zip|MesloLGSNerdFontMono-Regular.ttf"
+        "Hack|$NERD_BASE/Hack.zip|HackNerdFontMono-Regular.ttf"
+        "SourceCodePro|$NERD_BASE/SourceCodePro.zip|SauceCodeProNerdFontMono-Regular.ttf"
+        "UbuntuMono|$NERD_BASE/UbuntuMono.zip|UbuntuMonoNerdFontMono-Regular.ttf"
+        "CascadiaCode|$NERD_BASE/CascadiaCode.zip|CaskaydiaCoveNerdFontMono-Regular.ttf"
+        "Agave|$NERD_BASE/Agave.zip|AgaveNerdFontMono-Regular.ttf"
+        "Iosevka|$NERD_BASE/Iosevka.zip|IosevkaNerdFontMono-Regular.ttf"
     )
     DEFAULT_FONT="FiraCode"
 
@@ -362,6 +363,16 @@ font_setup() {
     echo -e "║   \033[1;33m★\033[1;37m  Termux Unified Setup — Nerd Fonts \033[1;33m★\033[1;36m     ║"
     echo -e "╠══════════════════════════════════════════════╣"
     echo -e "║    \033[1;95mPress Enter for default: FiraCode\033[1;36m         ║"
+    if [ -f "$HOME/.termux/.font_name" ]; then
+        # Box inner width is 46 cols. "    Current: " prefix takes 13,
+        # leaving 33 for the name - truncate long names instead of letting
+        # them push the right border out (was %-38s, which never truncates).
+        cur_font="$(cat "$HOME/.termux/.font_name")"
+        if [ "${#cur_font}" -gt 33 ]; then
+            cur_font="${cur_font:0:30}..."
+        fi
+        printf "║    \033[1;92mCurrent: %-33s\033[1;36m║\n" "$cur_font"
+    fi
     echo -e "╚══════════════════════════════════════════════╝"
     echo -e "\033[0m"
     echo -e "\033[1;34m┌──────────────────────────────────────────────┐\033[0m"
@@ -395,13 +406,62 @@ font_setup() {
         SELECTED_URL=$(echo "${FONTS[0]}" | cut -d'|' -f2)
         SELECTED_FILE=$(echo "${FONTS[0]}" | cut -d'|' -f3)
     fi
-    check_internet
     command -v unzip >/dev/null 2>&1 || install_pkg "unzip"
-    local TMP_ZIP="$HOME/.termux/.font_tmp.zip"
-    execute "curl -fLo '$TMP_ZIP' '$SELECTED_URL'" "Downloading $SELECTED_NAME Nerd Font"
-    execute "unzip -p '$TMP_ZIP' '$SELECTED_FILE' > '$HOME/.termux/font.ttf' && rm -f '$TMP_ZIP'" "Extracting $SELECTED_NAME Nerd Font"
+    local FONT_CACHE_DIR="$HOME/.termux/.font_cache"
+    mkdir -p "$FONT_CACHE_DIR"
+    local CACHED_ZIP="$FONT_CACHE_DIR/${SELECTED_NAME}.zip"
+
+    # A previous run that got interrupted (flaky mobile data, backgrounded
+    # app, low storage, etc.) can leave a non-empty but truncated/corrupt
+    # zip behind. `[ -s ]` alone can't tell a partial download from a good
+    # one, so every future run would silently "skip download" and keep
+    # trying to extract from garbage. Actually test the archive instead.
+    if [ -s "$CACHED_ZIP" ] && ! unzip -tq "$CACHED_ZIP" >/dev/null 2>&1; then
+        warn "Cached $SELECTED_NAME archive is corrupt/incomplete, discarding it."
+        rm -f "$CACHED_ZIP"
+    fi
+
+    if [ -s "$CACHED_ZIP" ]; then
+        info "Using cached $SELECTED_NAME archive (skipping download)."
+    else
+        check_internet
+        execute "curl -fLo '$CACHED_ZIP' '$SELECTED_URL'" "Downloading $SELECTED_NAME Nerd Font"
+        if ! unzip -tq "$CACHED_ZIP" >/dev/null 2>&1; then
+            rm -f "$CACHED_ZIP"
+            error_exit "Downloaded $SELECTED_NAME archive failed integrity check (interrupted download?). Nothing was changed - please retry."
+        fi
+    fi
+
+    # Extract into a scratch file first. Never write straight over the live
+    # font.ttf: Termux reads that file on every launch, and if it ever ends
+    # up empty/invalid, Termux can crash on startup with no easy way back in
+    # to fix it. Validating a throwaway temp file keeps a bad extraction
+    # from ever touching the font Termux is actually using.
+    local TMP_FONT
+    TMP_FONT=$(mktemp "$HOME/.termux/.font.XXXXXX") || error_exit "Could not create a temp file for font extraction."
+    execute "unzip -p '$CACHED_ZIP' '$SELECTED_FILE' > '$TMP_FONT'" "Extracting $SELECTED_NAME Nerd Font"
+
+    # Sanity-check it's really a font (sfnt magic: TrueType/OpenType/collection)
+    # before it's allowed anywhere near ~/.termux/font.ttf. Use od instead of
+    # grep for the magic bytes - grep treats embedded NUL bytes unreliably.
+    local font_magic
+    font_magic=$(od -An -tx1 -N4 "$TMP_FONT" 2>/dev/null | tr -d ' \n')
+    case "$font_magic" in
+        00010000|4f54544f|74727565|74746366) : ;; # TrueType | OTTO | 'true' | 'ttcf'
+        *)
+            rm -f "$TMP_FONT"
+            error_exit "Extracted font data doesn't look like a valid font file - aborting before applying it. Your current font was left untouched."
+            ;;
+    esac
+
+    # Keep a backup of whatever was working before, so a bad swap is always
+    # recoverable (mv is atomic, so Termux never sees a half-written file).
+    [ -f "$HOME/.termux/font.ttf" ] && cp -f "$HOME/.termux/font.ttf" "$HOME/.termux/font.ttf.bak"
+    mv -f "$TMP_FONT" "$HOME/.termux/font.ttf"
+    echo "$SELECTED_NAME" > "$HOME/.termux/.font_name"
     termux-reload-settings
     log "Font $SELECTED_NAME installed and settings reloaded."
+    read -rp "$(printf "${C_CYAN}Press [Enter] to return to the menu...${C_RESET}")"
 }
 
 zsh_setup() {
@@ -576,6 +636,7 @@ git_setup() {
     else
         warn "GitHub SSH connection failed. Add your key at: https://github.com/settings/keys"
     fi
+    read -rp "$(printf "${C_CYAN}Press [Enter] to return to the menu...${C_RESET}")"
 }
 
 switch_shell() {

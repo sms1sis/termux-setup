@@ -2,7 +2,7 @@
 # Debian Proot Unified Setup Script
 # by sms1sis
 
-VERSION="1.2.0"
+VERSION="1.3.0"
 set -uo pipefail
 LOGFILE="$HOME/debian_setup.log"
 
@@ -395,7 +395,35 @@ font_setup() {
     command -v unzip >/dev/null 2>&1 || { info "Installing unzip..."; apt-get install -y unzip >/dev/null 2>&1 || pkg install -y unzip >/dev/null 2>&1; }
     TMP_ZIP="$FONT_DIR/.font_tmp.zip"
     execute "curl -fLo '$TMP_ZIP' '$SELECTED_URL'" "Downloading $SELECTED_NAME Nerd Font"
-    execute "unzip -p '$TMP_ZIP' '$SELECTED_FILE' > '$FONT_DIR/font.ttf' && rm -f '$TMP_ZIP'" "Extracting $SELECTED_NAME Nerd Font"
+    if ! unzip -tq "$TMP_ZIP" >/dev/null 2>&1; then
+        rm -f "$TMP_ZIP"
+        error_exit "Downloaded $SELECTED_NAME archive failed integrity check (interrupted download?). Nothing was changed - please retry."
+    fi
+
+    # $FONT_DIR is the REAL Termux app's ~/.termux (reached from inside the
+    # proot), so font.ttf here is the exact file Termux reads on every
+    # launch. Extract to a scratch file and validate it's an actual font
+    # before it ever touches that path - writing straight to a live
+    # font.ttf with no check is what causes Termux to crash on startup if
+    # the extraction is ever empty or corrupt.
+    TMP_FONT="$FONT_DIR/.font_tmp.ttf"
+    execute "unzip -p '$TMP_ZIP' '$SELECTED_FILE' > '$TMP_FONT' && rm -f '$TMP_ZIP'" "Extracting $SELECTED_NAME Nerd Font"
+
+    # Sanity-check it's really a font (sfnt magic: TrueType/OpenType/collection)
+    # before it's allowed anywhere near the live font.ttf. Use od instead of
+    # grep for the magic bytes - grep treats embedded NUL bytes unreliably.
+    font_magic=$(od -An -tx1 -N4 "$TMP_FONT" 2>/dev/null | tr -d ' \n')
+    case "$font_magic" in
+        00010000|4f54544f|74727565|74746366) : ;; # TrueType | OTTO | 'true' | 'ttcf'
+        *)
+            rm -f "$TMP_FONT"
+            error_exit "Extracted font data doesn't look like a valid font file - aborting before applying it. Your current Termux font was left untouched."
+            ;;
+    esac
+
+    [ -f "$FONT_DIR/font.ttf" ] && cp -f "$FONT_DIR/font.ttf" "$FONT_DIR/font.ttf.bak"
+    mv -f "$TMP_FONT" "$FONT_DIR/font.ttf"
+
     if command -v termux-reload-settings >/dev/null 2>&1; then
         termux-reload-settings
     elif [ -f "/data/data/com.termux/files/usr/bin/termux-reload-settings" ]; then
